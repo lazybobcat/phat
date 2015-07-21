@@ -7,7 +7,7 @@ class Dummy {
 
     public function test()
     {
-        return "Hello World!";
+        return "Hello World! Updated";
     }
 
 }
