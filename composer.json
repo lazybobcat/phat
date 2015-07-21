@@ -1,0 +1,12 @@
+{
+    "name": "lo-x/phat",
+    "description": "Phat is a PHP framework used to create website and web applications",
+    "authors": [
+        {
+            "name": "Lo-X",
+            "email": "loic.boutter@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
