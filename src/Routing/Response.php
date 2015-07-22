@@ -394,8 +394,7 @@ class Response {
             fclose($fd);
             return true;
         }
-        $this->setStatus(404);
-        $this->sendHeader("Content-Type", "text/html");
+
         throw new FileNotFoundException("The file $filepath can not be opened");
     }
 
