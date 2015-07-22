@@ -35,4 +35,11 @@ if(!function_exists('debug')) {
         }
     }
 
+    /**
+     * @return boolean Returns true if in dev/debug mode, false if in production mode
+     */
+    function dev() {
+        return Configure::read('debug');
+    }
+
 }
