@@ -5,6 +5,7 @@ namespace Phat\Routing;
 
 use Phat\Core\Configure;
 use Phat\Routing\Exception\FileNotFoundException;
+use Phat\Routing\Exception\UnknownStatusException;
 
 class Response {
 
@@ -393,7 +394,8 @@ class Response {
             fclose($fd);
             return true;
         }
-
+        $this->setStatus(404);
+        $this->sendHeader("Content-Type", "text/html");
         throw new FileNotFoundException("The file $filepath can not be opened");
     }
 
@@ -427,6 +429,9 @@ class Response {
      * @return Response
      */
     public function setStatus($status) {
+        if(empty($this->statusCodes[$status])) {
+            throw new UnknownStatusException("Unknown HTTP status '$status'");
+        }
         $this->status = $status;
         return $this;
     }

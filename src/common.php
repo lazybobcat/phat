@@ -1,5 +1,6 @@
 <?php
 
+use Phat\Core\Configure;
 
 define('SECOND', 1);
 define('MINUTE', 60);
@@ -21,6 +22,9 @@ if(!function_exists('debug')) {
      */
     function debug($object, $html = true) {
         // If not in dev mode, return
+        if(!Configure::read('debug')) {
+            return;
+        }
 
         if($html) {
             r($object);
