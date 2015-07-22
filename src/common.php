@@ -1,0 +1,34 @@
+<?php
+
+
+define('SECOND', 1);
+define('MINUTE', 60);
+define('HOUR', 3600);
+define('DAY', 86400);
+define('WEEK', 604800);
+define('MONTH', 2592000);
+define('YEAR', 31536000);
+
+if(!function_exists('debug')) {
+
+    /**
+     * Enhanced var_dump or print_r, this function will help you debug your variables
+     * This function will have no effect in production mode
+     * Uses digitalnature/php-ref lib
+     *
+     * @param mixed $object The entity you want to debug, it can be of any type
+     * @param bool  $html   If set to true, will add html/css to the output. If set to false, only outputs markdown/text
+     */
+    function debug($object, $html = true) {
+        // If not in dev mode, return
+
+        if($html) {
+            r($object);
+        } else {
+            echo '<pre>';
+            rt($object);
+            echo '</pre>';
+        }
+    }
+
+}
