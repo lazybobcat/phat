@@ -3,14 +3,26 @@
 namespace Phat\Routing;
 
 
+use Phat\Http\Request;
+
 class Router {
 
-    private $url;
     private $routes = [];
 
-    public function __construct($url)
+
+    public function connect($template, $callable)
     {
-        $this->url = $url;
+        $route = new Route($template, $callable);
+        $this->routes[] = $route;
+    }
+
+    public function parse(Request $request)
+    {
+        foreach($this->routes as $route) {
+            if($route->match($request->url)) {
+                return $route->call();
+            }
+        }
     }
 
 }

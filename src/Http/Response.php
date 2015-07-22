@@ -1,6 +1,6 @@
 <?php
 
-namespace Phat\Routing;
+namespace Phat\Http;
 
 
 use Phat\Core\Configure;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Phat\Routing\Exception;
+namespace Phat\Http\Exception;
 
 
 class UnknownStatusException extends \Exception {
