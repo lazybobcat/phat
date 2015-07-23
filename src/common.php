@@ -11,6 +11,8 @@ define('MONTH', 2592000);
 define('YEAR', 31536000);
 
 if(!function_exists('debug')) {
+    // TODO : Remove that require when digitalnature/php-ref merges the pull request
+    require 'vendor/lo-x/php-ref/ref.php';
 
     /**
      * Enhanced var_dump or print_r, this function will help you debug your variables
@@ -34,6 +36,7 @@ if(!function_exists('debug')) {
             echo '</pre>';
         }
     }
+    Ref::config('backtraceIndirection', 3);
 
     /**
      * @return boolean Returns true if in dev/debug mode, false if in production mode

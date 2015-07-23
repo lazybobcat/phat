@@ -10,9 +10,26 @@
         }
     ],
     "minimum-stability": "dev",
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "lo-x/php-ref",
+                "version": "dev-master",
+                "source": {
+                    "url": "git://github.com/lo-x/php-ref.git",
+                    "type": "git",
+                    "reference": "master"
+                }
+            },
+            "autoload": {
+                "files": ["ref.php"]
+            }
+        }
+    ],
     "require": {
         "php": ">= 5.5",
-        "digitalnature/php-ref": "dev-master",
+        "lo-x/php-ref": "dev-master",
         "filp/whoops": "^1.2@dev"
     },
     "autoload": {
