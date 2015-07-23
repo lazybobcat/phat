@@ -3,26 +3,107 @@
 namespace Phat\Routing;
 
 
+use Phat\Http\Exception\NotFoundException;
 use Phat\Http\Request;
+use Phat\Routing\Exception\BadRouteException;
 
 class Router {
 
-    private $routes = [];
+    private static $routes = [];
+    private static $prefixes = [];
 
 
-    public function connect($template, $callable)
+    /**
+     * This methods adds a prefix configuration to the routing system
+     * @param string $urlKey    The keyword to match in the URL
+     * @param string $prefix    The prefix to apply to the controller actions (ie: admin_index())
+     */
+    public static function prefix($urlKey, $prefix)
     {
-        $route = new Route($template, $callable);
-        $this->routes[] = $route;
+        self::$prefixes[$urlKey] = $prefix;
     }
 
-    public function parse(Request $request)
+
+    /**
+     * This method parses the Request URL and fills the Request with useful information (controller, acton, parameters, etc.)
+     * @param Request $request The Request to parse
+     * @return Request
+     * @throws NotFoundException
+     */
+    public static function parse(Request $request)
     {
-        foreach($this->routes as $route) {
-            if($route->match($request->url)) {
-                return $route->call();
+        // Get a clean URL, just to be sure
+        if($request->url !== '/') {
+            $request->url = trim($request->url, '/');
+        }
+
+        // Check if the request matches a route
+        foreach(self::$routes as $r) {
+            $match = $r->matches($request);
+            if(!empty($match)) {
+                $request->plugin        = $r->plugin;
+                $request->controller    = $r->controller;
+                $request->action        = $r->action;
+                array_shift($match);
+                $request->parameters    = $match;
+
+                return $request;
             }
         }
+
+        // If the request doesn't match any user route, we try to find the default controller/action that could match
+        $params = explode('/', $request->url);
+
+        // Handle prefixes
+        if(in_array($params[0], array_keys(self::$prefixes))) {
+            $request->prefix = self::$prefixes[$params[0]];
+            array_shift($params);
+        }
+
+        if(empty($params[0])) {
+            throw new NotFoundException("This URL is not connected to any route. Use Router::connect() to fix it.");
+        } else {
+            $request->controller = $params[0];
+        }
+
+        $request->action = empty($params[1]) ? 'index' : $params[1];
+        $request->parameters = array_slice($params, 2);
+
+        return $request;
     }
+
+
+    public static function connect($template, $parameters)
+    {
+        $route = new Route();
+        $route->template    = trim($template, '/');
+        $route->template    = str_replace('/', '\\/', $route->template);
+        $route->template    = preg_replace("/(:[a-zA-Z0-9]+)/", "([^\/]+)", $route->template);
+        if(empty($parameters['controller'])) {
+            throw new BadRouteException("The controller is missing from the Route parameters");
+        } else {
+            $route->controller = $parameters['controller'];
+        }
+        $route->action      = empty($parameters['action']) ? 'index' : $parameters['action'];
+        $route->prefix      = empty($parameters['prefix']) ? null : $parameters['prefix'];
+        $route->plugin      = empty($parameters['plugin']) ? null : $parameters['plugin'];
+        if(!empty($parameters['method'])) {
+            if(is_string($parameters['method'])) {
+                $route->method = strtolower($parameters['method']);
+            } else {
+                $route->method = $parameters['method'];
+            }
+        } else {
+            $route->method = Request::All;
+        }
+
+        // Save the Route
+        $name = empty($parameters['name']) ? spl_object_hash($route) : $parameters['name'];
+        self::$routes[$name] = $route;
+
+        return $route;
+    }
+
+
 
 }

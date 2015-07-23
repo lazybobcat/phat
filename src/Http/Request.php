@@ -6,13 +6,19 @@ namespace Phat\Http;
 class Request {
 
     public $url;
-    public $method;
-    public $data = [];
+    public $method      = self::Get;
+    public $data        = [];
+    public $plugin      = null;
+    public $controller  = null;
+    public $action      = null;
+    public $prefix      = null;
+    public $parameters  = [];
 
-    const Get = 0;
-    const Post = 1;
-//    const Put = 2;
-//    const Delete = 3;
+    const Get = 'get';
+    const Post = 'post';
+//    const Put = 'put';
+//    const Delete = 'delete';
+    const All = 'all';
     const Unknown = -1;
 
 
