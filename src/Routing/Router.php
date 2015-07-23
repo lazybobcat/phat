@@ -73,6 +73,19 @@ class Router {
     }
 
 
+    /**
+     * Creates a Route by connecting a templated path/url to a set of {controller, action, prefix, plugn, name}
+     * The $parameters keys can be :
+     * - controller : The pointed controller name
+     * - action     : The pointed controller action
+     * - prefix     : The prefix that should be used (leave empty for no prefix)
+     * - plugin     : The plugin in which he controller is (leave empty for no plugin)
+     * - name       : You can give a name to the Route to get its URL more easily afterwards
+     * @param $template
+     * @param $parameters
+     * @return Route
+     * @throws BadRouteException
+     */
     public static function connect($template, $parameters)
     {
         $route = new Route();
@@ -103,6 +116,10 @@ class Router {
 
         return $route;
     }
+
+    // TODO : Router::url($name/$parameters)
+    // TODO : match template params to regexes
+    // TODO : Dispatcher
 
 
 
