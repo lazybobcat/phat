@@ -139,6 +139,36 @@ class Router {
         return $route;
     }
 
+
+    /**
+     * Connects the template to an action by forcing the HTTP method to GET
+     * @see Router::connect()
+     * @param $template
+     * @param $parameters
+     * @return Route
+     * @throws BadRouteException
+     */
+    public static function get($template, $parameters)
+    {
+        $parameters = array_merge($parameters, ['method' => Request::Get]);
+        return self::connect($template, $parameters);
+    }
+
+
+    /**
+     * Connects the template to an action by forcing the HTTP method to POST
+     * @see Router::connect()
+     * @param $template
+     * @param $parameters
+     * @return Route
+     * @throws BadRouteException
+     */
+    public static function post($template, $parameters)
+    {
+        $parameters = array_merge($parameters, ['method' => Request::Post]);
+        return self::connect($template, $parameters);
+    }
+
     // TODO : Router::url($name/$parameters)
     // TODO : match template params to regexes
     // TODO : Dispatcher
