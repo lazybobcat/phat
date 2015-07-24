@@ -56,6 +56,8 @@ class Router {
                 }
 
                 $request->parameters    = $match;
+                // Give back the first '/' to the URL
+                $request->url = '/' . $request->url;
                 return $request;
             }
         }
@@ -77,6 +79,9 @@ class Router {
 
         $request->action = empty($params[1]) ? 'index' : $params[1];
         $request->parameters = array_slice($params, 2);
+
+        // Give back the first '/' to the URL
+        $request->url = '/' . $request->url;
 
         return $request;
     }
