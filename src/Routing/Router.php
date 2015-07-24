@@ -43,6 +43,7 @@ class Router {
             $match = $r->matches($request);
             if(!empty($match)) {
                 $request->plugin        = $r->plugin;
+                $request->prefix        = $r->prefix;
                 $request->controller    = $r->controller;
                 $request->action        = $r->action;
 
@@ -98,8 +99,10 @@ class Router {
     public static function connect($template, $parameters)
     {
         $route = new Route();
+        $route->prefix      = empty($parameters['prefix']) ? null : $parameters['prefix'];
         $route->template    = trim($template, '/');
         $route->pattern     = $route->template;
+        $route->template    = empty($route->prefix) ? $route->template : trim(self::$prefixes[$route->prefix] . '/' . $route->template, '/');
         $route->template    = str_replace('/', '\\/', $route->template);
         $route->template    = preg_replace("/(:[a-zA-Z0-9]+)/", "([^\/]+)", $route->template);
         if(empty($parameters['controller'])) {
@@ -108,7 +111,6 @@ class Router {
             $route->controller = $parameters['controller'];
         }
         $route->action      = empty($parameters['action']) ? 'index' : $parameters['action'];
-        $route->prefix      = empty($parameters['prefix']) ? null : $parameters['prefix'];
         $route->plugin      = empty($parameters['plugin']) ? null : $parameters['plugin'];
         if(!empty($parameters['method'])) {
             if(is_string($parameters['method'])) {
