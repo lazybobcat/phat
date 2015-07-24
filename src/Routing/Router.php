@@ -11,17 +11,17 @@ use Phat\Routing\Exception\BadRouteException;
 class Router {
 
     private static $routes = [];
-    private static $prefixes = [];
+    private static $prefixes = ['' => ''];
 
 
     /**
      * This methods adds a prefix configuration to the routing system
-     * @param string $urlKey    The keyword to match in the URL
+     * @param string $urlKey    The keyword to match in the URL (including slash(es))
      * @param string $prefix    The prefix to apply to the controller actions (ie: admin_index())
      */
     public static function prefix($urlKey, $prefix)
     {
-        self::$prefixes[$urlKey] = $prefix;
+        self::$prefixes[$prefix] = $urlKey;
     }
 
 
@@ -120,6 +120,11 @@ class Router {
             $route->method = Request::All;
         }
 
+        // Check if prefix exists
+        if(!empty($route->prefix) && empty(self::$prefixes[$route->prefix])) {
+            throw new BadRouteException("The Route is using the prefix '$route->prefix' but this prefix hasn't been declared. Please use Router::prefix() first.");
+        }
+
         // Extract dynamic data
         preg_match_all('/:[a-zA-Z0-9]+/', trim($template, '/'), $urlVariables);
         if(!empty($urlVariables)) {
@@ -193,7 +198,7 @@ class Router {
             }
         }
 
-        throw new BadRouteException("The Route you're asking an URL from does not exist. Please add the Route with Router::connect() first.");
+        throw new BadRouteException("The Route you're asking an URL from does not exist. Please check you did pass all the needed parameters or add the Route with Router::connect() first.");
     }
 
     /**
@@ -208,6 +213,9 @@ class Router {
         }
         $r = self::$routes[$name];
         $url .= $r->pattern;
+        if(!empty($r->prefix)) {
+            $url = self::$prefixes[$r->prefix].$url;
+        }
         return $url;
     }
 
@@ -230,6 +238,9 @@ class Router {
                     throw new BadParameterException("The parameter '$varname' is missing for the Router::url() to work.");
                 }
                 $url = str_replace("$var", $parameters[$varname], $url);
+            }
+            if(!empty($parameters['prefix'])) {
+                $url = self::$prefixes[$parameters['prefix']].$url;
             }
             return $url;
         }
