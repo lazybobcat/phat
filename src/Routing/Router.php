@@ -5,6 +5,7 @@ namespace Phat\Routing;
 
 use Phat\Http\Exception\NotFoundException;
 use Phat\Http\Request;
+use Phat\Routing\Exception\BadParameterException;
 use Phat\Routing\Exception\BadRouteException;
 
 class Router {
@@ -98,6 +99,7 @@ class Router {
     {
         $route = new Route();
         $route->template    = trim($template, '/');
+        $route->pattern     = $route->template;
         $route->template    = str_replace('/', '\\/', $route->template);
         $route->template    = preg_replace("/(:[a-zA-Z0-9]+)/", "([^\/]+)", $route->template);
         if(empty($parameters['controller'])) {
@@ -169,7 +171,71 @@ class Router {
         return self::connect($template, $parameters);
     }
 
-    // TODO : Router::url($name/$parameters)
+
+    public static function url($parameters)
+    {
+        // TODO : ability to return full URL
+        $url = '/';
+
+        if(is_string($parameters)) {
+            return self::urlFromName($parameters, $url);
+        } elseif(!is_array($parameters)) {
+            throw new BadParameterException("The Router::url() method only takes array or string parameters. Read the documentation for more information.");
+        }
+
+        if(!empty($parameters['name'])) {
+            return self::urlFromName($parameters['name'], $url);
+        }
+
+        foreach(self::$routes as $r) {
+            if($r->equals($parameters)) {
+                return self::urlFromParameters($parameters, $r, $url);
+            }
+        }
+
+        throw new BadRouteException("The Route you're asking an URL from does not exist. Please add the Route with Router::connect() first.");
+    }
+
+    /**
+     * @param $name
+     * @param $url
+     * @return string
+     * @throws BadParameterException
+     */
+    private static function urlFromName($name, $url) {
+        if (empty(self::$routes[$name])) {
+            throw new BadParameterException("The named route you're asking for does not exist. Please add the Route with Router::connect() first.");
+        }
+        $r = self::$routes[$name];
+        $url .= $r->pattern;
+        return $url;
+    }
+
+    /**
+     * @param $parameters
+     * @param $route
+     * @param $url
+     * @return string
+     * @throws BadParameterException
+     * @throws BadRouteException
+     */
+    private static function urlFromParameters($parameters, $route, $url) {
+        $url .= $route->pattern;
+        preg_match_all('/:[a-zA-Z0-9]+/', $route->pattern, $urlVariables);
+        if (!empty($urlVariables)) {
+            $urlVariables = current($urlVariables);
+            foreach ($urlVariables as $var) {
+                $varname = substr($var, 1);
+                if (empty($parameters[$varname])) {
+                    throw new BadParameterException("The parameter '$varname' is missing for the Router::url() to work.");
+                }
+                $url = str_replace("$var", $parameters[$varname], $url);
+            }
+            return $url;
+        }
+        throw new BadRouteException("The Route you're asking an URL from does not exist. Please add the Route with Router::connect() first.");
+    }
+
     // TODO : match template params to regexes
     // TODO : Dispatcher
 
