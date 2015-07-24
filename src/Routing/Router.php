@@ -44,9 +44,16 @@ class Router {
                 $request->plugin        = $r->plugin;
                 $request->controller    = $r->controller;
                 $request->action        = $r->action;
-                array_shift($match);
-                $request->parameters    = $match;
 
+                array_shift($match);
+
+                // Dynamic data
+                foreach($r->dynamicData as $attr => $var) {
+                    $request->$attr = $match[$r->urlVariables[$var]];
+                    unset($match[$r->urlVariables[$var]]);
+                }
+
+                $request->parameters    = $match;
                 return $request;
             }
         }
@@ -55,7 +62,7 @@ class Router {
         $params = explode('/', $request->url);
 
         // Handle prefixes
-        if(in_array($params[0], array_keys(self::$prefixes))) {
+        if(!empty($params) && in_array($params[0], array_keys(self::$prefixes))) {
             $request->prefix = self::$prefixes[$params[0]];
             array_shift($params);
         }
@@ -78,6 +85,7 @@ class Router {
      * The $parameters keys can be :
      * - controller : The pointed controller name
      * - action     : The pointed controller action
+     * - method     : The HTTP method the Route must use. Default Request::All. @see Request
      * - prefix     : The prefix that should be used (leave empty for no prefix)
      * - plugin     : The plugin in which he controller is (leave empty for no plugin)
      * - name       : You can give a name to the Route to get its URL more easily afterwards
@@ -108,6 +116,20 @@ class Router {
             }
         } else {
             $route->method = Request::All;
+        }
+
+        // Extract dynamic data
+        preg_match_all('/:[a-zA-Z0-9]+/', trim($template, '/'), $urlVariables);
+        if(!empty($urlVariables)) {
+            $urlVariables = current($urlVariables);
+            foreach($urlVariables as $k => $var) {
+                $route->urlVariables[$var] = $k;
+            }
+        }
+        foreach($parameters as $p => $v) {
+            if(false !== strpos($v, ':')) {
+                $route->dynamicData[$p] = $v;
+            }
         }
 
         // Save the Route

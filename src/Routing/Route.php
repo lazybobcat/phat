@@ -13,6 +13,8 @@ class Route {
     public $controller  = null;
     public $action      = null;
     public $prefix      = null;
+    public $dynamicData = [];
+    public $urlVariables= [];
 
     public function matches(Request $request)
     {
