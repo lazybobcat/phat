@@ -2,13 +2,12 @@
 
 namespace Phat\Http;
 
-
 use Phat\Core\Configure;
 use Phat\Routing\Exception\FileNotFoundException;
 use Phat\Routing\Exception\UnknownStatusException;
 
-class Response {
-
+class Response
+{
     protected $statusCodes = [
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -50,7 +49,7 @@ class Response {
         502 => 'Bad Gateway',
         503 => 'Service Unavailable',
         504 => 'Gateway Time-out',
-        505 => 'Unsupported Version'
+        505 => 'Unsupported Version',
     ];
 
     protected $mimeTypes = [
@@ -272,7 +271,7 @@ class Response {
         'vtt' => 'text/vtt',
         'mkv' => 'video/x-matroska',
         'pkpass' => 'application/vnd.apple.pkpass',
-        'ajax' => 'text/html'
+        'ajax' => 'text/html',
     ];
 
     protected $protocol = 'HTTP/1.1';
@@ -285,8 +284,8 @@ class Response {
     protected $cacheDirectives = [];
     protected $cookies = [];
 
-
-    public function __construct(array $options = []) {
+    public function __construct(array $options = [])
+    {
         if (isset($options['body'])) {
             $this->setBody($options['body']);
         }
@@ -302,7 +301,8 @@ class Response {
         $this->setCharset($options['charset']);
     }
 
-    public function send() {
+    public function send()
+    {
         if (isset($this->headers['Location']) && $this->status === 200) {
             $this->setStatus(302);
         }
@@ -322,12 +322,12 @@ class Response {
 
     public function outputCompressed()
     {
-        return strpos($_SERVER["HTTP_ACCEPT_ENCODING"], 'gzip') !== false && (ini_get("zlib.output_compression") === '1' || in_array('ob_gzhandler', ob_list_handlers()));
+        return strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false && (ini_get('zlib.output_compression') === '1' || in_array('ob_gzhandler', ob_list_handlers()));
     }
 
-
-    private function sendHeaders() {
-        if(headers_sent()) {
+    private function sendHeaders()
+    {
+        if (headers_sent()) {
             return;
         }
 
@@ -335,21 +335,23 @@ class Response {
         $this->sendCookies();
         $this->sendHeader("{$this->protocol} {$this->status} {$codeMessage}");
         $this->sendContentType();
-        foreach($this->headers as $name => $value) {
+        foreach ($this->headers as $name => $value) {
             $this->sendHeader($name, $value);
         }
     }
 
-    private function sendHeader($name, $value = null) {
-        if(!$value) {
+    private function sendHeader($name, $value = null)
+    {
+        if (!$value) {
             header($name);
         } else {
             header("{$name}: {$value}");
         }
     }
 
-    private function sendCookies() {
-        foreach($this->cookies as $name => $cookie) {
+    private function sendCookies()
+    {
+        foreach ($this->cookies as $name => $cookie) {
             setcookie(
                 $name,
                 $cookie['value'],
@@ -362,7 +364,8 @@ class Response {
         }
     }
 
-    private function sendContentType() {
+    private function sendContentType()
+    {
         if ($this->charset) {
             $this->sendHeader('Content-Type', "{$this->contentType}; charset={$this->charset}");
         } else {
@@ -370,7 +373,8 @@ class Response {
         }
     }
 
-    private function sendContent($content) {
+    private function sendContent($content)
+    {
         if (!is_string($content) && is_callable($content)) {
             $content = $content();
         }
@@ -378,173 +382,207 @@ class Response {
         echo $content;
     }
 
-    private function sendFile($filepath) {
+    private function sendFile($filepath)
+    {
         $this->outputCompressed();
-        if($fd = @fopen($filepath, "r")) {
+        if ($fd = @fopen($filepath, 'r')) {
             $fsize = filesize($filepath);
             $this->sendHeader("Content-length: $fsize");
-            $this->sendHeader("Expires: 0");
-            $this->sendHeader("Cache-control: must-revalidate");
-            $this->sendHeader("Pragma: public");
+            $this->sendHeader('Expires: 0');
+            $this->sendHeader('Cache-control: must-revalidate');
+            $this->sendHeader('Pragma: public');
             set_time_limit(0);
             $bufferSize = 8192;
             while (!feof($fd)) {
                 echo fread($fd, $bufferSize);
             }
             fclose($fd);
+
             return true;
         }
 
         throw new FileNotFoundException("The file $filepath can not be opened");
     }
 
-
-
     /**
      * @return string
      */
-    public function getProtocol() {
+    public function getProtocol()
+    {
         return $this->protocol;
     }
 
     /**
      * @param string $protocol
+     *
      * @return Response
      */
-    public function setProtocol($protocol) {
+    public function setProtocol($protocol)
+    {
         $this->protocol = $protocol;
+
         return $this;
     }
 
     /**
      * @return int
      */
-    public function getStatus() {
+    public function getStatus()
+    {
         return $this->status;
     }
 
     /**
      * @param int $status
+     *
      * @return Response
      */
-    public function setStatus($status) {
-        if(empty($this->statusCodes[$status])) {
+    public function setStatus($status)
+    {
+        if (empty($this->statusCodes[$status])) {
             throw new UnknownStatusException("Unknown HTTP status '$status'");
         }
         $this->status = $status;
+
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getContentType() {
+    public function getContentType()
+    {
         return $this->contentType;
     }
 
     /**
      * @param string $contentType
+     *
      * @return Response
      */
-    public function setContentType($contentType) {
+    public function setContentType($contentType)
+    {
         $this->contentType = $this->mimeTypes[$contentType];
+
         return $this;
     }
 
     /**
      * @return array
      */
-    public function getHeaders() {
+    public function getHeaders()
+    {
         return $this->headers;
     }
 
     /**
      * @param $name
      * @param $value
+     *
      * @return Response
      */
-    public function addHeader($name, $value) {
+    public function addHeader($name, $value)
+    {
         $this->headers[$name] = $value;
+
         return $this;
     }
 
     /**
-     * @return null
      */
-    public function getBody() {
+    public function getBody()
+    {
         return $this->body;
     }
 
     /**
      * @param null $body
+     *
      * @return Response
      */
-    public function setBody($body) {
+    public function setBody($body)
+    {
         $this->body = $body;
+
         return $this;
     }
 
     /**
-     * @return null
      */
-    public function getFile() {
+    public function getFile()
+    {
         return $this->file;
     }
 
     /**
      * @param null $file
+     *
      * @return Response
      */
-    public function setFile($filepath) {
+    public function setFile($filepath)
+    {
         $this->file = $filepath;
+
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getCharset() {
+    public function getCharset()
+    {
         return $this->charset;
     }
 
     /**
      * @param string $charset
+     *
      * @return Response
      */
-    public function setCharset($charset) {
+    public function setCharset($charset)
+    {
         $this->charset = $charset;
+
         return $this;
     }
 
     /**
      * @return array
      */
-    public function getCacheDirectives() {
+    public function getCacheDirectives()
+    {
         return $this->cacheDirectives;
     }
 
     /**
      * @param array $cacheDirectives
+     *
      * @return Response
      */
-    public function setCacheDirectives($cacheDirectives) {
+    public function setCacheDirectives($cacheDirectives)
+    {
         $this->cacheDirectives = $cacheDirectives;
+
         return $this;
     }
 
     /**
      * @return array
      */
-    public function getCookies() {
+    public function getCookies()
+    {
         return $this->cookies;
     }
 
     /**
      * @param array $cookies
+     *
      * @return Response
      */
-    public function setCookies($cookies) {
+    public function setCookies($cookies)
+    {
         $this->cookies = $cookies;
+
         return $this;
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Phat\Http\Exception;
 
-
-class UnknownStatusException extends \Exception {
-
+class UnknownStatusException extends \Exception
+{
 }

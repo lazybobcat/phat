@@ -2,6 +2,6 @@
 
 namespace Phat\Routing\Exception;
 
-class BadRouteException extends \Exception {
-
+class BadRouteException extends \Exception
+{
 }

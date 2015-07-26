@@ -2,12 +2,10 @@
 
 namespace Phat;
 
-
-class Dummy {
-
+class Dummy
+{
     public function test()
     {
-        return "Hello World! Updated";
+        return 'Hello World! Updated';
     }
-
 }

@@ -10,25 +10,26 @@ define('WEEK', 604800);
 define('MONTH', 2592000);
 define('YEAR', 31536000);
 
-if(!function_exists('debug')) {
+if (!function_exists('debug')) {
     // TODO : Remove that require when digitalnature/php-ref merges the pull request
     require 'vendor/lo-x/php-ref/ref.php';
 
     /**
      * Enhanced var_dump or print_r, this function will help you debug your variables
      * This function will have no effect in production mode
-     * Uses digitalnature/php-ref lib
+     * Uses digitalnature/php-ref lib.
      *
      * @param mixed $object The entity you want to debug, it can be of any type
      * @param bool  $html   If set to true, will add html/css to the output. If set to false, only outputs markdown/text
      */
-    function debug($object, $html = true) {
+    function debug($object, $html = true)
+    {
         // If not in dev mode, return
-        if(!Configure::read('debug')) {
+        if (!Configure::read('debug')) {
             return;
         }
 
-        if($html) {
+        if ($html) {
             r($object);
         } else {
             echo '<pre>';
@@ -39,24 +40,28 @@ if(!function_exists('debug')) {
     Ref::config('backtraceIndirection', 3);
 }
 
-if(!function_exists('dev')) {
+if (!function_exists('dev')) {
     /**
-     * @return boolean Returns true if in dev/debug mode, false if in production mode
+     * @return bool Returns true if in dev/debug mode, false if in production mode
      */
-    function dev() {
+    function dev()
+    {
         return Configure::read('debug');
     }
 }
 
-if(!function_exists('namespaceSplit')) {
+if (!function_exists('namespaceSplit')) {
     /**
-     * Splits and returns an array containing each element of a namespaced class
+     * Splits and returns an array containing each element of a namespaced class.
+     *
      * @param $var
+     *
      * @return array
      */
-    function namespaceSplit($var) {
+    function namespaceSplit($var)
+    {
         $split = explode('\\', $var);
-        if(!is_array($split)) {
+        if (!is_array($split)) {
             $split = [$var];
         }
 
