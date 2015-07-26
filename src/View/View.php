@@ -9,7 +9,6 @@ use Phat\View\Exception\MissingTemplateException;
 
 class View
 {
-    // TODO : inheritance with extends()
     // TODO : element()
     // TODO : Helpers
 
@@ -39,9 +38,25 @@ class View
     protected $blocks;
 
     /**
+     * @var string View filepath used internally
+     */
+    protected $current;
+
+    /**
+     * @var array Parent View container
+     */
+    protected $parents = [];
+
+    /**
+     * @var array Content stack used internally
+     */
+    protected $stack = [];
+
+    /**
      * @var string The layout template name to use to render the view.
      */
     public $layout = 'default';
+
     /**
      * @var string The view template name to render.
      */
@@ -118,6 +133,31 @@ class View
     }
 
     /**
+     * Can be used in a template to inherit from another template.
+     * The parent template can fetch some blocks that will actually be filled by children.
+     *
+     * @param string $parent The file path to the parent template
+     *
+     * @throws LogicErrorException
+     * @throws MissingTemplateException
+     */
+    public function extend($parent)
+    {
+        if (!file_exists($parent)) {
+            throw new MissingTemplateException("The template file '$parent' cannot be found.");
+        }
+
+        if ($parent == $this->current) {
+            throw new LogicErrorException('Templates cannot extend themselves.');
+        }
+        if (isset($this->parents[$parent]) && $this->parents[$parent] == $this->current) {
+            throw new LogicErrorException('Templates cannot extend each other in a loop.');
+        }
+
+        $this->parents[$this->current] = $parent;
+    }
+
+    /**
      * Fetches a view block and returns its content.
      * A view block is a reusable part of a View and can be used to control where a part o the view will be display, whether it is in the view or the layout.
      * IE: You can define a 'js' block with View::start('js') and View::end() and then display it in the layout with View::fetch('js').
@@ -166,11 +206,23 @@ class View
         $this->blocks->set($name, $value);
     }
 
+    /**
+     * Appends content to a block. If $value is null, will start a buffered block that you need to stop with View::end().
+     *
+     * @param $name
+     * @param null $value
+     */
     public function append($name, $value = null)
     {
         $this->blocks->concat($name, $value, ViewBlock::APPEND);
     }
 
+    /**
+     * Prepends content to a block. If $value is null, will start a buffered block that you need to stop with View::end().
+     *
+     * @param $name
+     * @param null $value
+     */
     public function prepend($name, $value = null)
     {
         $this->blocks->concat($name, $value, ViewBlock::PREPEND);
@@ -186,11 +238,23 @@ class View
      */
     protected function renderView($viewFile)
     {
+        $this->current = $viewFile;
+
+        // Evaluate the view
         extract($this->viewVars);
         ob_start();
         include $viewFile;
+        $content = ob_get_clean();
 
-        return ob_get_clean();
+        // Check if there are parents to render
+        if (isset($this->parents[$this->current])) {
+            $this->stack[] = $this->fetch('content');
+            $this->assign('content', $content);
+            $content = $this->renderView($this->parents[$this->current]);
+            $this->assign('content', array_pop($this->stack));
+        }
+
+        return $content;
     }
 
     /**

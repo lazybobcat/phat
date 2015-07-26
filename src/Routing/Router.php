@@ -76,7 +76,7 @@ class Router
         if (empty($params[0])) {
             throw new NotFoundException('This URL is not connected to any route. Use Router::connect() to fix it.');
         } else {
-            $request->controller = $params[0];
+            $request->controller = 'App\Controller\\'.ucfirst($params[0]).'Controller';
         }
 
         $request->action = empty($params[1]) ? 'index' : $params[1];
