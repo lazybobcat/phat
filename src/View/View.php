@@ -3,31 +3,67 @@
 namespace Phat\View;
 
 use Phat\Core\Configure;
+use Phat\Core\Exception\LogicErrorException;
 use Phat\Http\Request;
 use Phat\View\Exception\MissingTemplateException;
 
 class View
 {
-    // TODO : inheritance with extends()
-    // TODO : fetch(...)
-    // TODO : element()
     // TODO : Helpers
 
+    /**
+     * @var Request The current request
+     */
     protected $request;
+
+    /**
+     * @var string The Controller name
+     */
     protected $controllerName;
+
+    /**
+     * @var array Variables to send to the view
+     */
     protected $viewVars = [];
+
+    /**
+     * @var bool Has the view already been rendered
+     */
     protected $hasRendered = false;
+
+    /**
+     * @var ViewBlock Associated ViewBlock container
+     */
     protected $blocks;
+
+    /**
+     * @var string View filepath used internally
+     */
+    protected $current;
+
+    /**
+     * @var array Parent View container
+     */
+    protected $parents = [];
+
+    /**
+     * @var array Content stack used internally
+     */
+    protected $stack = [];
 
     /**
      * @var string The layout template name to use to render the view.
      */
     public $layout = 'default';
+
     /**
      * @var string The view template name to render.
      */
     public $view = null;
 
+    /**
+     * The extensions of template files.
+     */
     const VIEW_EXTENSION = 'php';
 
     public function __construct(Request $request, $controllerName, $viewVars = [])
@@ -67,6 +103,7 @@ class View
      * @return string
      *
      * @throws MissingTemplateException
+     * @throws LogicErrorException
      */
     public function render($view = null, $layout = null)
     {
@@ -85,11 +122,55 @@ class View
         $this->blocks->set('content', $this->renderLayout($layoutFile));
         $remainingBlocks = count($this->blocks->unclosed());
 
-        debug($initialBlocks);
-        debug($remainingBlocks);
-        die();
+        if ($initialBlocks !== $remainingBlocks) {
+            throw new LogicErrorException(sprintf("The block '%s' stayed open.", $this->blocks->active()));
+        }
+
+        $this->hasRendered = true;
 
         return $this->blocks->get('content');
+    }
+
+    /**
+     * Renders an template element into the current template view. You can pass variables to the element with $data.
+     *
+     * @param string $name The name of the element in the folder app/Template/Element/
+     * @param array  $data The variables to pass to the element
+     *
+     * @return string
+     *
+     * @throws MissingTemplateException
+     */
+    public function element($name, array $data = []/*, array $options = []*/)
+    {
+        $file = $this->getElementFileName($name);
+
+        return $this->renderElement($file, $data);
+    }
+
+    /**
+     * Can be used in a template to inherit from another template.
+     * The parent template can fetch some blocks that will actually be filled by children.
+     *
+     * @param string $parent The file path to the parent template
+     *
+     * @throws LogicErrorException
+     * @throws MissingTemplateException
+     */
+    public function extend($parent)
+    {
+        if (!file_exists($parent)) {
+            throw new MissingTemplateException("The template file '$parent' cannot be found.");
+        }
+
+        if ($parent == $this->current) {
+            throw new LogicErrorException('Templates cannot extend themselves.');
+        }
+        if (isset($this->parents[$parent]) && $this->parents[$parent] == $this->current) {
+            throw new LogicErrorException('Templates cannot extend each other in a loop.');
+        }
+
+        $this->parents[$this->current] = $parent;
     }
 
     /**
@@ -141,11 +222,23 @@ class View
         $this->blocks->set($name, $value);
     }
 
+    /**
+     * Appends content to a block. If $value is null, will start a buffered block that you need to stop with View::end().
+     *
+     * @param $name
+     * @param null $value
+     */
     public function append($name, $value = null)
     {
         $this->blocks->concat($name, $value, ViewBlock::APPEND);
     }
 
+    /**
+     * Prepends content to a block. If $value is null, will start a buffered block that you need to stop with View::end().
+     *
+     * @param $name
+     * @param null $value
+     */
     public function prepend($name, $value = null)
     {
         $this->blocks->concat($name, $value, ViewBlock::PREPEND);
@@ -159,13 +252,28 @@ class View
      *
      * @return string
      */
-    protected function renderView($viewFile)
+    protected function renderView($viewFile, $data = [])
     {
-        extract($this->viewVars);
+        $this->current = $viewFile;
+        if (empty($data)) {
+            $data = $this->viewVars;
+        }
+
+        // Evaluate the view
+        extract($data);
         ob_start();
         include $viewFile;
+        $content = ob_get_clean();
 
-        return ob_get_clean();
+        // Check if there are parents to render
+        if (isset($this->parents[$this->current])) {
+            $this->stack[] = $this->fetch('content');
+            $this->assign('content', $content);
+            $content = $this->renderView($this->parents[$this->current]);
+            $this->assign('content', array_pop($this->stack));
+        }
+
+        return $content;
     }
 
     /**
@@ -178,6 +286,27 @@ class View
     protected function renderLayout($layoutFile)
     {
         return $this->renderView($layoutFile);
+    }
+
+    /**
+     * @see View::element()
+     *
+     * @param string $file The filepath to the element, the file must exist
+     * @param array  $data The data to pass to the element
+     *
+     * @return string
+     */
+    protected function renderElement($file, array $data)
+    {
+        // Backup current state
+        $current = $this->current;
+
+        $element = $this->renderView($file, array_merge($this->viewVars, $data));
+
+        // Restore current state
+        $this->current = $current;
+
+        return $element;
     }
 
     /**
@@ -247,6 +376,35 @@ class View
         }
 
         $path .= '.'.self::VIEW_EXTENSION;
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        throw new MissingTemplateException("The template file '$path' does not exist.");
+    }
+
+    /**
+     * Construct the element file path given the element file name and the current app configuration.
+     *
+     * @param $element
+     *
+     * @return string
+     * 
+     * @throws MissingTemplateException
+     */
+    protected function getElementFileName($element)
+    {
+        $config = Configure::read('App');
+        $path = '';
+
+        if (!empty($this->request->plugin)) {
+            $path .= $config['pluginsDir'].DIRECTORY_SEPARATOR.$this->request->plugin.DIRECTORY_SEPARATOR;
+        } else {
+            $path .= $config['appDir'].DIRECTORY_SEPARATOR;
+        }
+
+        $path .= $config['viewDir'].DIRECTORY_SEPARATOR.'Element'.DIRECTORY_SEPARATOR.$element.'.'.self::VIEW_EXTENSION;
 
         if (file_exists($path)) {
             return $path;

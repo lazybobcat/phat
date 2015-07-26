@@ -31,7 +31,7 @@ class Configure
             return self::$values[$entry];
         }
 
-        return;
+        return '';
     }
 
     public static function check($entry)
