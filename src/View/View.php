@@ -133,6 +133,23 @@ class View
     }
 
     /**
+     * Renders an template element into the current template view. You can pass variables to the element with $data.
+     *
+     * @param string $name The name of the element in the folder app/Template/Element/
+     * @param array  $data The variables to pass to the element
+     *
+     * @return string
+     *
+     * @throws MissingTemplateException
+     */
+    public function element($name, array $data = []/*, array $options = []*/)
+    {
+        $file = $this->getElementFileName($name);
+
+        return $this->renderElement($file, $data);
+    }
+
+    /**
      * Can be used in a template to inherit from another template.
      * The parent template can fetch some blocks that will actually be filled by children.
      *
@@ -236,12 +253,15 @@ class View
      *
      * @return string
      */
-    protected function renderView($viewFile)
+    protected function renderView($viewFile, $data = [])
     {
         $this->current = $viewFile;
+        if (empty($data)) {
+            $data = $this->viewVars;
+        }
 
         // Evaluate the view
-        extract($this->viewVars);
+        extract($data);
         ob_start();
         include $viewFile;
         $content = ob_get_clean();
@@ -267,6 +287,27 @@ class View
     protected function renderLayout($layoutFile)
     {
         return $this->renderView($layoutFile);
+    }
+
+    /**
+     * @see View::element()
+     *
+     * @param string $file The filepath to the element, the file must exist
+     * @param array  $data The data to pass to the element
+     *
+     * @return string
+     */
+    protected function renderElement($file, array $data)
+    {
+        // Backup current state
+        $current = $this->current;
+
+        $element = $this->renderView($file, array_merge($this->viewVars, $data));
+
+        // Restore current state
+        $this->current = $current;
+
+        return $element;
     }
 
     /**
@@ -336,6 +377,35 @@ class View
         }
 
         $path .= '.'.self::VIEW_EXTENSION;
+
+        if (file_exists($path)) {
+            return $path;
+        }
+
+        throw new MissingTemplateException("The template file '$path' does not exist.");
+    }
+
+    /**
+     * Construct the element file path given the element file name and the current app configuration.
+     *
+     * @param $element
+     *
+     * @return string
+     * 
+     * @throws MissingTemplateException
+     */
+    protected function getElementFileName($element)
+    {
+        $config = Configure::read('App');
+        $path = '';
+
+        if (!empty($this->request->plugin)) {
+            $path .= $config['pluginsDir'].DIRECTORY_SEPARATOR.$this->request->plugin.DIRECTORY_SEPARATOR;
+        } else {
+            $path .= $config['appDir'].DIRECTORY_SEPARATOR;
+        }
+
+        $path .= $config['viewDir'].DIRECTORY_SEPARATOR.'Element'.DIRECTORY_SEPARATOR.$element.'.'.self::VIEW_EXTENSION;
 
         if (file_exists($path)) {
             return $path;
