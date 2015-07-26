@@ -1,6 +1,8 @@
 {
     "name": "lo-x/phat",
     "description": "Phat is a PHP framework used to create website and web applications",
+    "type": "library",
+    "licence": "MIT",
     "authors": [
         {
             "name": "Lo-X",
@@ -8,5 +10,32 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "lo-x/php-ref",
+                "version": "dev-master",
+                "source": {
+                    "url": "git://github.com/lo-x/php-ref.git",
+                    "type": "git",
+                    "reference": "master"
+                }
+            },
+            "autoload": {
+                "files": ["ref.php"]
+            }
+        }
+    ],
+    "require": {
+        "php": ">= 5.5",
+        "lo-x/php-ref": "dev-master",
+        "filp/whoops": "^1.2@dev"
+    },
+    "autoload": {
+        "psr-4": {
+            "Phat\\": "src",
+            "App\\": "app"
+        }
+    }
 }
