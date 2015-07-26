@@ -5,6 +5,7 @@ namespace Phat\Controller;
 use Phat\Core\Configure;
 use Phat\Http\Request;
 use Phat\Http\Response;
+use Phat\Routing\Router;
 use Phat\View\View;
 
 class Controller implements ControllerInterface
@@ -16,6 +17,27 @@ class Controller implements ControllerInterface
     protected $response;
     protected $view;
     protected $name;
+
+    /**
+     * Redirects to the given url.
+     *
+     * @param array|string $url    An array of parameters (controller, action, plugin, prefix, etc.) or a Route alias
+     * @param int          $status The HTTP status to send back (ie: 301 or 302)
+     *
+     * @return Response
+     *
+     * @throws \Phat\Http\Exception\UnknownStatusException
+     * @throws \Phat\Routing\Exception\BadParameterException
+     * @throws \Phat\Routing\Exception\BadRouteException
+     */
+    public function redirect($url, $status = 302)
+    {
+        $response = new Response();
+        $response->setStatus($status);
+        $response->addHeader('Location', Router::url($url, true));
+
+        return $response;
+    }
 
     public function __construct(Request $request = null)
     {

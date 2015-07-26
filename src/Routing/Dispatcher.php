@@ -25,8 +25,8 @@ class Dispatcher
         // Everything is fine, time to do some Controller action !
         $controller->beforeAction();
         $response = call_user_func_array(array($controller, $action), $request->parameters);
-        if(empty($response) || !($response instanceof Response)) {
-            throw new DispatchException("Every Controller actions must return an object of type Response or a sub-class of Response.");
+        if (empty($response) || !($response instanceof Response)) {
+            throw new DispatchException('Every Controller actions must return an object of type Response or a sub-class of Response.');
         }
         $controller->afterAction();
 
@@ -37,6 +37,10 @@ class Dispatcher
     private static function loadController(Request $request)
     {
         $ctrlName = $request->controller;
+
+        if (false === strstr($ctrlName, '\\')) {
+            $ctrlName = 'App\Controller\\'.ucfirst($ctrlName).'Controller';
+        }
 
         if (!class_exists($ctrlName)) {
             throw new NotFoundException("The controller '$ctrlName' hasn't been found. Please make sure the namespace is included in the name and the class does exist");

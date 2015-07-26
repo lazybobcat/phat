@@ -2,6 +2,7 @@
 
 namespace Phat\Routing;
 
+use Phat\Core\Configure;
 use Phat\Http\Exception\NotFoundException;
 use Phat\Http\Request;
 use Phat\Routing\Exception\BadParameterException;
@@ -58,8 +59,8 @@ class Router
 
                 $request->parameters = $match;
                 // Give back the first '/' to the URL
-                if($request->url != '/') {
-                    $request->url = '/' . $request->url;
+                if ($request->url != '/') {
+                    $request->url = '/'.$request->url;
                 }
 
                 return $request;
@@ -85,8 +86,8 @@ class Router
         $request->parameters = array_slice($params, 2);
 
         // Give back the first '/' to the URL
-        if($request->url != '/') {
-            $request->url = '/' . $request->url;
+        if ($request->url != '/') {
+            $request->url = '/'.$request->url;
         }
 
         return $request;
@@ -95,7 +96,7 @@ class Router
     /**
      * Creates a Route by connecting a templated path/url to a set of {controller, action, prefix, plugn, name}
      * The $parameters keys can be :
-     * - controller : The pointed controller name
+     * - controller : The pointed controller shortcut name (ie: The shortcut name of 'App\Controller\PostsController' is 'posts')
      * - action     : The pointed controller action
      * - method     : The HTTP method the Route must use. Default Request::All. @see Request
      * - prefix     : The prefix that should be used (leave empty for no prefix)
@@ -121,7 +122,11 @@ class Router
         if (empty($parameters['controller'])) {
             throw new BadRouteException('The controller is missing from the Route parameters');
         } else {
-            $route->controller = $parameters['controller'];
+            if (false !== strstr($parameters['controller'], '\\')) {
+                $route->controller = preg_replace('!^([a-zA-Z0-9]+\\\\)+([a-zA-Z0-9]+)Controller$!i', '$2', $parameters['controller']);
+            } else {
+                $route->controller = $parameters['controller'];
+            }
         }
         $route->action = empty($parameters['action']) ? 'index' : $parameters['action'];
         $route->plugin = empty($parameters['plugin']) ? null : $parameters['plugin'];
@@ -199,19 +204,30 @@ class Router
         return self::connect($template, $parameters);
     }
 
-    public static function url($parameters)
+    /**
+     * Generates an URL from an array of parameters or from a Route alias.
+     *
+     * @param array|string $parameters An array of parameters (controller shortcut name, action, plugin, prefix, etc.) or a Route alias
+     * @param bool         $full       Return or not the full URL including the domain name
+     *
+     * @return string
+     *
+     * @throws BadParameterException
+     * @throws BadRouteException
+     */
+    public static function url($parameters, $full = false)
     {
-        // TODO : ability to return full URL
-        $url = '/';
+        if ($full) {
+            $config = Configure::read('App');
+            $url = $config['baseUrl'].'/';
+        } else {
+            $url = '/';
+        }
 
         if (is_string($parameters)) {
             return self::urlFromName($parameters, $url);
         } elseif (!is_array($parameters)) {
             throw new BadParameterException('The Router::url() method only takes array or string parameters. Read the documentation for more information.');
-        }
-
-        if (!empty($parameters['name'])) {
-            return self::urlFromName($parameters['name'], $url);
         }
 
         foreach (self::$routes as $r) {

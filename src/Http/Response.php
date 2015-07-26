@@ -436,6 +436,8 @@ class Response
      * @param int $status
      *
      * @return Response
+     *
+     * @throws UnknownStatusException
      */
     public function setStatus($status)
     {
