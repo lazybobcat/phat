@@ -96,7 +96,8 @@ class Router
     /**
      * Creates a Route by connecting a templated path/url to a set of {controller, action, prefix, plugn, name}
      * The $parameters keys can be :
-     * - controller : The pointed controller shortcut name (ie: The shortcut name of 'App\Controller\PostsController' is 'posts')
+     * - controller : The pointed controller shortcut name or full namespace
+     *                (ie: The shortcut name of 'App\Controller\PostsController' is 'posts')
      * - action     : The pointed controller action
      * - method     : The HTTP method the Route must use. Default Request::All. @see Request
      * - prefix     : The prefix that should be used (leave empty for no prefix)
@@ -123,6 +124,7 @@ class Router
             throw new BadRouteException('The controller is missing from the Route parameters');
         } else {
             if (false !== strstr($parameters['controller'], '\\')) {
+                // In case someone isn't using the short name of the controller or for plugins
                 $route->controller = preg_replace('!^([a-zA-Z0-9]+\\\\)+([a-zA-Z0-9]+)Controller$!i', '$2', $parameters['controller']);
             } else {
                 $route->controller = $parameters['controller'];
@@ -207,7 +209,7 @@ class Router
     /**
      * Generates an URL from an array of parameters or from a Route alias.
      *
-     * @param array|string $parameters An array of parameters (controller shortcut name, action, plugin, prefix, etc.) or a Route alias
+     * @param array|string $parameters An array of parameters (controller, action, plugin, prefix, etc.) or a Route alias
      * @param bool         $full       Return or not the full URL including the domain name
      *
      * @return string
