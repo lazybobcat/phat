@@ -62,6 +62,11 @@ class View
     public $view = null;
 
     /**
+     * @var string Used to override the view directory path
+     */
+    public $viewPath = null;
+
+    /**
      * The extensions of template files.
      */
     const VIEW_EXTENSION = 'php';
@@ -323,14 +328,21 @@ class View
         $config = Configure::read('App');
         $path = '';
 
-        if (!empty($this->request->plugin)) {
-            $path .= $config['pluginsDir'].DIRECTORY_SEPARATOR.$this->request->plugin.DIRECTORY_SEPARATOR;
-        } else {
-            $path .= $config['appDir'].DIRECTORY_SEPARATOR;
-        }
+        if (!$this->viewPath) {
+            if (!empty($this->request->plugin)) {
+                $path .= $config['pluginsDir'].DIRECTORY_SEPARATOR.$this->request->plugin.DIRECTORY_SEPARATOR;
+            } else {
+                $path .= $config['appDir'].DIRECTORY_SEPARATOR;
+            }
 
-        $path .= $config['viewDir'].DIRECTORY_SEPARATOR;
-        $path .= $this->controllerName.DIRECTORY_SEPARATOR;
+            $path .= $config['viewDir'].DIRECTORY_SEPARATOR;
+            $path .= $this->controllerName.DIRECTORY_SEPARATOR;
+        } else {
+            $path = $this->viewPath;
+            if (substr($path, 0, -1) !== DIRECTORY_SEPARATOR) {
+                $path .= DIRECTORY_SEPARATOR;
+            }
+        }
 
         if (!empty($view)) {
             $path .= $view;

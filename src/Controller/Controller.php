@@ -2,6 +2,7 @@
 
 namespace Phat\Controller;
 
+use Phat\Core\Configure;
 use Phat\Http\Request;
 use Phat\Http\Response;
 use Phat\View\View;
@@ -9,7 +10,6 @@ use Phat\View\View;
 class Controller implements ControllerInterface
 {
     // TODO : Helpers and Components
-    // TODO : easy 404
     // TODO : easy redirect
 
     protected $request;
@@ -36,7 +36,7 @@ class Controller implements ControllerInterface
     /**
      * Renders a view with a layout and construct the Response object to be returned to the client.
      * If not specified, the fetched view will correspond to the current action.
-     * If not specified, the fetched layout will be the default layout;.
+     * If not specified, the fetched layout will be the default layout.
      *
      * @param string $view
      * @param string $layout
@@ -50,6 +50,25 @@ class Controller implements ControllerInterface
         $this->afterRender();
 
         return new Response(['body' => $body]);
+    }
+
+    /**
+     * Renders the app/Template/ e404 view and sets the HTTP Status to 404.
+     *
+     * @param string $view
+     * @param string $layout
+     *
+     * @return Response
+     */
+    public function e404($view = 'e404', $layout = null)
+    {
+        $config = Configure::read('App');
+        $this->view->viewPath = $config['appDir'].DIRECTORY_SEPARATOR.'Template';
+        $this->beforeRender();
+        $body = $this->view->render($view, $layout);
+        $this->afterRender();
+
+        return new Response\NotFoundResponse(['body' => $body]);
     }
 
     /**
