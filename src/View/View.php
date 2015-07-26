@@ -9,7 +9,6 @@ use Phat\View\Exception\MissingTemplateException;
 
 class View
 {
-    // TODO : element()
     // TODO : Helpers
 
     /**
