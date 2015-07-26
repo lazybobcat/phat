@@ -82,13 +82,11 @@ class ViewBlock
     {
         return $this->activeBlocks;
     }
-<<<<<<< HEAD
 
     public function active()
     {
         end($this->activeBlocks);
+
         return key($this->activeBlocks);
     }
-=======
->>>>>>> develop
 }
