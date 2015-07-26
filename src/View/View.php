@@ -13,10 +13,29 @@ class View
     // TODO : element()
     // TODO : Helpers
 
+    /**
+     * @var Request The current request
+     */
     protected $request;
+
+    /**
+     * @var string The Controller name
+     */
     protected $controllerName;
+
+    /**
+     * @var array Variables to send to the view
+     */
     protected $viewVars = [];
+
+    /**
+     * @var bool Has the view already been rendered
+     */
     protected $hasRendered = false;
+
+    /**
+     * @var ViewBlock Associated ViewBlock container
+     */
     protected $blocks;
 
     /**
@@ -28,6 +47,9 @@ class View
      */
     public $view = null;
 
+    /**
+     * The extensions of template files.
+     */
     const VIEW_EXTENSION = 'php';
 
     public function __construct(Request $request, $controllerName, $viewVars = [])
@@ -89,6 +111,8 @@ class View
         if ($initialBlocks !== $remainingBlocks) {
             throw new LogicErrorException(sprintf("The block '%s' stayed open.", $this->blocks->active()));
         }
+
+        $this->hasRendered = true;
 
         return $this->blocks->get('content');
     }

@@ -6,24 +6,52 @@ use Phat\Core\Exception\LogicErrorException;
 
 class ViewBlock
 {
+    /**
+     * @var array Contains the blocks content indexed by block name
+     */
     private $blocks = [];
+
+    /**
+     * @var array Contains the currently active (buffering) blocks indexed by block name
+     */
     private $activeBlocks = [];
 
+    /**
+     * Override content.
+     */
     const OVERRIDE = 'override';
+
+    /**
+     * Append content.
+     */
     const APPEND = 'append';
+
+    /**
+     * Prepend content.
+     */
     const PREPEND = 'prepend';
 
     /**
      * Sets the block $name content to $value.
+     * This will override ay existing block content.
      *
-     * @param string $name
-     * @param string $value
+     * @param string $name  The block name
+     * @param string $value The value to put in the block
      */
     final public function set($name, $value)
     {
         $this->blocks[$name] = (string) $value;
     }
 
+    /**
+     * Gets the content of the block $name.
+     * If no block is found, returns $default value.
+     *
+     * @param string $name    Name of the block
+     * @param string $default The default value
+     *
+     * @return string The block content
+     */
     final public function get($name, $default = '')
     {
         if (!isset($this->blocks[$name])) {
@@ -33,6 +61,15 @@ class ViewBlock
         return $this->blocks[$name];
     }
 
+    /**
+     * Start buffering output to put it in the block $name.
+     * You have to stop the buffering by calling ViewBlock::end(). Then you will be able to get the content with ViewBlock::get().
+     *
+     * @param string $name The name of the block
+     * @param string $mode The writing mode: override content, append or prepend to content
+     *
+     * @throws LogicErrorException
+     */
     final public function start($name, $mode = self::OVERRIDE)
     {
         if (in_array($name, array_keys($this->activeBlocks))) {
@@ -43,6 +80,11 @@ class ViewBlock
         ob_start();
     }
 
+    /**
+     * Ends a buffered block started with ViewBlock::start().
+     *
+     * @throws LogicErrorException
+     */
     final public function end()
     {
         if (empty($this->activeBlocks)) {
@@ -60,6 +102,16 @@ class ViewBlock
         array_pop($this->activeBlocks);
     }
 
+    /**
+     * Does a concatenation to an existing block. Can append or prepend.
+     * If the value is null, a buffered block will start, you need to end it with ViewBlock::end().
+     *
+     * @param string      $name  The name of the block
+     * @param string|null $value The value to append/prepend
+     * @param string      $mode  ViewBlock::APPEND or ViewBlock::PREPEND
+     *
+     * @throws LogicErrorException
+     */
     final public function concat($name, $value = null, $mode = self::APPEND)
     {
         if (empty($value)) {
@@ -78,11 +130,21 @@ class ViewBlock
         }
     }
 
+    /**
+     * Returns currently active buffering blocks.
+     *
+     * @return array
+     */
     public function unclosed()
     {
         return $this->activeBlocks;
     }
 
+    /**
+     * Returns the name of the last active block.
+     *
+     * @return mixed
+     */
     public function active()
     {
         end($this->activeBlocks);
