@@ -7,6 +7,10 @@ use Phat\Core\Exception\LogicErrorException;
 use Phat\Http\Request;
 use Phat\View\Exception\MissingTemplateException;
 
+/**
+ * The View is the link between the Controller and a template. It stores data and methods for templated views.
+ * It allows templates to inherit from others, to include others, to access Controller passed data, etc.
+ */
 class View
 {
     // TODO : Helpers

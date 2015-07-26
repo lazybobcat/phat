@@ -3,11 +3,18 @@
 namespace Phat\Http;
 
 use Phat\Core\Configure;
-use Phat\Routing\Exception\FileNotFoundException;
-use Phat\Routing\Exception\UnknownStatusException;
+use Phat\Http\Exception\FileNotFoundException;
+use Phat\Http\Exception\UnknownStatusException;
 
+/**
+ * Response is the object that is returned to the client. It handles common page retuning as well as file downloading
+ * or redirections.
+ */
 class Response
 {
+    /**
+     * @var array HTTP Status codes and strings
+     */
     protected $statusCodes = [
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -52,6 +59,9 @@ class Response
         505 => 'Unsupported Version',
     ];
 
+    /**
+     * @var array Shortcut for mimetypes
+     */
     protected $mimeTypes = [
         'html' => 'text/html',
         'json' => 'application/json',
@@ -274,14 +284,44 @@ class Response
         'ajax' => 'text/html',
     ];
 
+    /**
+     * @var string HTTP Protocol
+     */
     protected $protocol = 'HTTP/1.1';
+
+    /**
+     * @var int HTTP Status
+     */
     protected $status = 200;
+
+    /**
+     * @var string HTTP Content-Type
+     */
     protected $contentType = 'text/html';
+
+    /**
+     * @var array HTTP Headers
+     */
     protected $headers = [];
+
+    /**
+     * @var string Response body (content)
+     */
     protected $body = null;
+
+    /**
+     * @var string File to send back to the client (download)
+     */
     protected $file = null;
+
+    /**
+     * @var string Charset
+     */
     protected $charset = 'UTF-8';
-    protected $cacheDirectives = [];
+
+    /**
+     * @var array Client's cookies
+     */
     protected $cookies = [];
 
     public function __construct(array $options = [])
@@ -517,7 +557,7 @@ class Response
     }
 
     /**
-     * @param null $file
+     * @param string $filepath
      *
      * @return Response
      */
@@ -544,26 +584,6 @@ class Response
     public function setCharset($charset)
     {
         $this->charset = $charset;
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getCacheDirectives()
-    {
-        return $this->cacheDirectives;
-    }
-
-    /**
-     * @param array $cacheDirectives
-     *
-     * @return Response
-     */
-    public function setCacheDirectives($cacheDirectives)
-    {
-        $this->cacheDirectives = $cacheDirectives;
 
         return $this;
     }

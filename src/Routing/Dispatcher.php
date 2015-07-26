@@ -7,8 +7,19 @@ use Phat\Http\Request;
 use Phat\Http\Response;
 use Phat\Routing\Exception\DispatchException;
 
+/**
+ * The Dispatcher is responsible for calling the right controller and action given a Request.
+ */
 class Dispatcher
 {
+    /**
+     * Takes the Request attributes to call the right controller and action with the right parameters.
+     *
+     * @param Request $request
+     *
+     * @throws DispatchException
+     * @throws NotFoundException
+     */
     public static function dispatch(Request $request)
     {
         $controller = self::loadController($request);
@@ -34,6 +45,16 @@ class Dispatcher
         $response->send();
     }
 
+    /**
+     * Parses the Request to extract the right controller class.
+     *
+     * @param Request $request
+     *
+     * @return mixed
+     *
+     * @throws DispatchException
+     * @throws NotFoundException
+     */
     private static function loadController(Request $request)
     {
         $ctrlName = $request->controller;
