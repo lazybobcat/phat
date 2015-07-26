@@ -2,7 +2,6 @@
 
 namespace Phat\Routing\Exception;
 
-
-class DispatchException extends \Exception {
-
+class DispatchException extends \Exception
+{
 }

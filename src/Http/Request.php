@@ -2,17 +2,16 @@
 
 namespace Phat\Http;
 
-
-class Request {
-
+class Request
+{
     public $url;
-    public $method      = self::Get;
-    public $data        = [];
-    public $plugin      = null;
-    public $controller  = null;
-    public $action      = null;
-    public $prefix      = null;
-    public $parameters  = [];
+    public $method = self::Get;
+    public $data = [];
+    public $plugin = null;
+    public $controller = null;
+    public $action = null;
+    public $prefix = null;
+    public $parameters = [];
 
     const Get = 'get';
     const Post = 'post';
@@ -21,18 +20,17 @@ class Request {
     const All = 'all';
     const Unknown = -1;
 
-
     public function __construct()
     {
         // Requested URI
-        if(isset($_SERVER['REQUEST_URI'])) {
+        if (isset($_SERVER['REQUEST_URI'])) {
             $this->url = $_SERVER['REQUEST_URI'];
         } else {
             $this->url = '';
         }
 
         // Used Method
-        switch($_SERVER['REQUEST_METHOD']) {
+        switch ($_SERVER['REQUEST_METHOD']) {
             case 'POST':
                 $this->method = self::Post;
                 break;
@@ -45,8 +43,8 @@ class Request {
                 $this->method = self::Unknown;
         }
 
-        if(isset($_POST))
+        if (isset($_POST)) {
             $this->data = $_POST;
+        }
     }
-
 }

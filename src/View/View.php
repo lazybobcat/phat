@@ -67,6 +67,7 @@ class View
      * @return string
      *
      * @throws MissingTemplateException
+     * @throws LogicErrorException
      */
     public function render($view = null, $layout = null)
     {

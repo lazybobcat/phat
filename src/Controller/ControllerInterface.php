@@ -2,8 +2,8 @@
 
 namespace Phat\Controller;
 
-
-interface ControllerInterface {
+interface ControllerInterface
+{
     public function beforeAction();
     public function afterAction();
     public function beforeRender();
