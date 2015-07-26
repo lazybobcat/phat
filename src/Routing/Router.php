@@ -10,8 +10,11 @@ use Phat\Routing\Exception\BadRouteException;
 
 class Router
 {
+    // TODO : match template params to regexes
+
     private static $routes = [];
     private static $prefixes = ['' => ''];
+    private static $lastRequest = null;
 
     /**
      * This methods adds a prefix configuration to the routing system.
@@ -63,6 +66,8 @@ class Router
                     $request->url = '/'.$request->url;
                 }
 
+                self::$lastRequest = $request;
+
                 return $request;
             }
         }
@@ -79,7 +84,7 @@ class Router
         if (empty($params[0])) {
             throw new NotFoundException('This URL is not connected to any route. Use Router::connect() to fix it.');
         } else {
-            $request->controller = 'App\Controller\\'.ucfirst($params[0]).'Controller';
+            $request->controller = $params[0];
         }
 
         $request->action = empty($params[1]) ? 'index' : $params[1];
@@ -89,6 +94,8 @@ class Router
         if ($request->url != '/') {
             $request->url = '/'.$request->url;
         }
+
+        self::$lastRequest = $request;
 
         return $request;
     }
@@ -232,6 +239,15 @@ class Router
             throw new BadParameterException('The Router::url() method only takes array or string parameters. Read the documentation for more information.');
         }
 
+        // Checking if the parameters 'controller' is filled
+        if (empty($parameters['controller'])) {
+            if (!empty(self::$lastRequest)) {
+                $parameters['controller'] = self::$lastRequest->controller;
+            } else {
+                throw new BadParameterException('The Router needs you to pass the controller shortcut name in order to generate an URL.');
+            }
+        }
+
         foreach (self::$routes as $r) {
             if ($r->equals($parameters)) {
                 return self::urlFromParameters($parameters, $r, $url);
@@ -294,7 +310,4 @@ class Router
         }
         throw new BadRouteException("The Route you're asking an URL from does not exist. Please add the Route with Router::connect() first.");
     }
-
-    // TODO : match template params to regexes
-    // TODO : Dispatcher
 }
