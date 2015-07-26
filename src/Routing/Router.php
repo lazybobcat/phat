@@ -8,12 +8,27 @@ use Phat\Http\Request;
 use Phat\Routing\Exception\BadParameterException;
 use Phat\Routing\Exception\BadRouteException;
 
+/**
+ * The Router is responsible for handling Routes. It can connect routing parameters to a Route, it can return back an
+ * URL, it handles prefixes.
+ */
 class Router
 {
     // TODO : match template params to regexes
 
+    /**
+     * @var array Route container
+     */
     private static $routes = [];
+
+    /**
+     * @var array Prefixes (url => action prefix)
+     */
     private static $prefixes = ['' => ''];
+
+    /**
+     * @var Request The last parsed Request if available.
+     */
     private static $lastRequest = null;
 
     /**

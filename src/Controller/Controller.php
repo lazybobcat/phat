@@ -8,41 +8,34 @@ use Phat\Http\Response;
 use Phat\Routing\Router;
 use Phat\View\View;
 
+/**
+ * The class Controller is a proposed base for all controllers in your application.
+ * The only goal of a Controller is to return a Response object. It uses actions methods to handle the different requests.
+ * It also provides handy shortcuts to generate Response object depending on your needs.
+ * There are pre/post action and render hooks that you can use by sub-classing Controller.
+ */
 class Controller implements ControllerInterface
 {
     // TODO : Helpers and Components
-    // TODO : easy redirect
-
-    protected $request;
-    protected $response;
-    protected $view;
-    protected $name;
 
     /**
-     * Redirects to the given url.
-     *
-     * @param array|string $url    An array of parameters (controller, action, plugin, prefix, etc.) or a Route alias
-     * @param int          $status The HTTP status to send back (ie: 301 or 302)
-     *
-     * @return Response
-     *
-     * @throws \Phat\Http\Exception\UnknownStatusException
-     * @throws \Phat\Routing\Exception\BadParameterException
-     * @throws \Phat\Routing\Exception\BadRouteException
+     * @var Request The client's request
      */
-    public function redirect($url, $status = 302)
-    {
-        $response = new Response();
-        $response->setStatus($status);
-        $response->addHeader('Location', Router::url($url, true));
+    protected $request;
 
-        return $response;
-    }
+    /**
+     * @var View A View object that can be used to render html code
+     */
+    protected $view;
+
+    /**
+     * @var string This controller's name
+     */
+    protected $name;
 
     public function __construct(Request $request = null)
     {
         $this->request = ($request ? $request : new Request());
-        $this->response = new Response();
 
         $nameArray = namespaceSplit(get_class($this));
         $this->name = substr(end($nameArray), 0, -10);
@@ -91,6 +84,27 @@ class Controller implements ControllerInterface
         $this->afterRender();
 
         return new Response\NotFoundResponse(['body' => $body]);
+    }
+
+    /**
+     * Redirects to the given url.
+     *
+     * @param array|string $url    An array of parameters (controller, action, plugin, prefix, etc.) or a Route alias
+     * @param int          $status The HTTP status to send back (ie: 301 or 302)
+     *
+     * @return Response
+     *
+     * @throws \Phat\Http\Exception\UnknownStatusException
+     * @throws \Phat\Routing\Exception\BadParameterException
+     * @throws \Phat\Routing\Exception\BadRouteException
+     */
+    public function redirect($url, $status = 302)
+    {
+        $response = new Response();
+        $response->setStatus($status);
+        $response->addHeader('Location', Router::url($url, true));
+
+        return $response;
     }
 
     /**

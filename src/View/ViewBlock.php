@@ -4,6 +4,12 @@ namespace Phat\View;
 
 use Phat\Core\Exception\LogicErrorException;
 
+/**
+ * A ViewBlock is a piece of template that can be filled in a template and then displayed elsewhere in the template or
+ * in the layout or in an inherited template.
+ *
+ * @see View
+ */
 class ViewBlock
 {
     /**
