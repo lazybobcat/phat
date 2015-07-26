@@ -37,12 +37,29 @@ if(!function_exists('debug')) {
         }
     }
     Ref::config('backtraceIndirection', 3);
+}
 
+if(!function_exists('dev')) {
     /**
      * @return boolean Returns true if in dev/debug mode, false if in production mode
      */
     function dev() {
         return Configure::read('debug');
     }
+}
 
+if(!function_exists('namespaceSplit')) {
+    /**
+     * Splits and returns an array containing each element of a namespaced class
+     * @param $var
+     * @return array
+     */
+    function namespaceSplit($var) {
+        $split = explode('\\', $var);
+        if(!is_array($split)) {
+            $split = [$var];
+        }
+
+        return $split;
+    }
 }
