@@ -29,8 +29,7 @@ class Dispatcher {
 
         // And rendering
         $controller->beforeRender();
-        // TODO : rendering with $response in a separate class
-        echo $response->getBody();
+        $response->send();
         $controller->afterRender();
     }
 
