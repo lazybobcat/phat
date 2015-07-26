@@ -58,7 +58,9 @@ class Router
 
                 $request->parameters = $match;
                 // Give back the first '/' to the URL
-                $request->url = '/'.$request->url;
+                if($request->url != '/') {
+                    $request->url = '/' . $request->url;
+                }
 
                 return $request;
             }
@@ -83,7 +85,9 @@ class Router
         $request->parameters = array_slice($params, 2);
 
         // Give back the first '/' to the URL
-        $request->url = '/'.$request->url;
+        if($request->url != '/') {
+            $request->url = '/' . $request->url;
+        }
 
         return $request;
     }

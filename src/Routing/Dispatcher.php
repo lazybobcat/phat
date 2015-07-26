@@ -4,6 +4,7 @@ namespace Phat\Routing;
 
 use Phat\Http\Exception\NotFoundException;
 use Phat\Http\Request;
+use Phat\Http\Response;
 use Phat\Routing\Exception\DispatchException;
 
 class Dispatcher
@@ -24,12 +25,13 @@ class Dispatcher
         // Everything is fine, time to do some Controller action !
         $controller->beforeAction();
         $response = call_user_func_array(array($controller, $action), $request->parameters);
+        if(empty($response) || !($response instanceof Response)) {
+            throw new DispatchException("Every Controller actions must return an object of type Response or a sub-class of Response.");
+        }
         $controller->afterAction();
 
-        // And rendering
-        $controller->beforeRender();
+        // Send response to client
         $response->send();
-        $controller->afterRender();
     }
 
     private static function loadController(Request $request)
