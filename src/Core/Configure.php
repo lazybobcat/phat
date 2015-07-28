@@ -41,14 +41,19 @@ class Configure
 
     /**
      * Returns the value of the given key.
+     * Returns the whole configuration array if the key is null.
      * Returns an empty string if the key is not set in the configuration array.
      *
      * @param string $entry The key
      *
      * @return string The value
      */
-    public static function read($entry)
+    public static function read($entry = null)
     {
+        if(null === $entry) {
+            return self::$values;
+        }
+
         if (self::check($entry)) {
             return self::$values[$entry];
         }
