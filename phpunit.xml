@@ -1,5 +1,6 @@
 <phpunit bootstrap="tests/bootstrap.php"
-        colors="true">
+        colors="true"
+        stopOnFailure="false">
     <testsuites>
         <testsuite name="Phat Test Suite">
             <directory>tests</directory>
