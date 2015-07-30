@@ -2,7 +2,6 @@
 
 namespace Phat\Test\TestCase\Http;
 
-
 use Phat\Http\Request;
 use Phat\TestTool\TestCase;
 

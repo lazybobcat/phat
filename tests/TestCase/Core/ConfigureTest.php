@@ -2,7 +2,6 @@
 
 namespace Phat\Test\TestCase\Core;
 
-
 use Phat\Core\Configure;
 use Phat\TestTool\TestCase;
 
@@ -109,5 +108,4 @@ class ConfigureTest extends TestCase
         $this->assertFalse(Configure::check('Test'));
         $this->assertFalse(Configure::check('TestArray'));
     }
-
 }

@@ -7,7 +7,6 @@ use Phat\TestTool\TestCase;
 
 class CommonTest extends TestCase
 {
-
     public function testDebug()
     {
         $expected = <<< EOT
@@ -21,7 +20,7 @@ EOT;
 
         $expected = sprintf($expected, __FILE__, __LINE__ + 2);
         $this->expectOutputString($expected);
-        debug("Hello World!", false); // Text mode
+        debug('Hello World!', false); // Text mode
     }
 
     public function testDev()
@@ -35,7 +34,7 @@ EOT;
 
     public function testNamespaceSplit()
     {
-        $result = namespaceSplit("Hey");
+        $result = namespaceSplit('Hey');
         $this->assertEquals(['Hey'], $result);
 
         $result = namespaceSplit("\Hey");
@@ -47,5 +46,4 @@ EOT;
         $result = namespaceSplit("\Hey\Ho\You");
         $this->assertEquals(['Hey', 'Ho', 'You'], $result);
     }
-
 }

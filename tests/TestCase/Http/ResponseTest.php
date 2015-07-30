@@ -2,13 +2,11 @@
 
 namespace Phat\Test\TestCase\Http;
 
-
 use Phat\Http\Response;
 use Phat\TestTool\TestCase;
 
 class ResponseTest extends TestCase
 {
-
     public function testConstruction()
     {
         $response = new Response();
@@ -25,7 +23,7 @@ class ResponseTest extends TestCase
             'body' => '{"hello": "world"}',
             'status' => 302,
             'contentType' => 'json',
-            'charset' => 'utf-16'
+            'charset' => 'utf-16',
         ];
 
         $response = new Response($options);
@@ -46,7 +44,6 @@ class ResponseTest extends TestCase
         $response->setProtocol('TEST/1.1');
         $this->assertEquals('TEST/1.1', $response->getProtocol());
     }
-
 
     public function testSetStatus()
     {
@@ -99,8 +96,7 @@ class ResponseTest extends TestCase
     public function setBody()
     {
         $response = new Response();
-        $response->setBody("<p>Hello World!</p>");
-        $this->assertEquals("<p>Hello World!</p>", $response->getBody());
+        $response->setBody('<p>Hello World!</p>');
+        $this->assertEquals('<p>Hello World!</p>', $response->getBody());
     }
-
 }

@@ -2,10 +2,8 @@
 
 namespace Phat\Test\TestCase\Controller;
 
-
 use Phat\Controller\Controller;
 use Phat\Http\Request;
-use Phat\Http\Response\NotFoundResponse;
 use Phat\TestTool\TestCase;
 use Phat\View\View;
 
@@ -40,7 +38,7 @@ class ControllerTest extends TestCase
 
     public function testConstruction()
     {
-        if(ini_get('safe_mode') === '1') {
+        if (ini_get('safe_mode') === '1') {
             $this->markTestSkipped('Safe Mode is on');
         }
 
@@ -55,10 +53,8 @@ class ControllerTest extends TestCase
         // TODO
     }
 
-
     public function testE404()
     {
         // TODO
     }
-
 }
