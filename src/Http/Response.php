@@ -338,7 +338,8 @@ class Response
             $this->setContentType($options['contentType']);
         }
         if (!isset($options['charset'])) {
-            $options['charset'] = Configure::read('App.encoding');
+            $config = Configure::read('App');
+            $options['charset'] = $config['encoding'];
         }
         $this->setCharset($options['charset']);
     }
