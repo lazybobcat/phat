@@ -32,9 +32,13 @@
         "lo-x/php-ref": "dev-master",
         "filp/whoops": "^1.2@dev"
     },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
     "autoload": {
         "psr-4": {
             "Phat\\": "src",
+            "Phat\\Test\\": "tests",
             "App\\": "app"
         }
     }
