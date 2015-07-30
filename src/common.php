@@ -60,7 +60,7 @@ if (!function_exists('namespaceSplit')) {
      */
     function namespaceSplit($var)
     {
-        $split = explode('\\', $var);
+        $split = explode('\\', trim($var, '\\'));
         if (!is_array($split)) {
             $split = [$var];
         }
