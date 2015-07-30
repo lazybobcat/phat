@@ -27,10 +27,10 @@ EOT;
     public function testDev()
     {
         Configure::write('debug', true);
-        $this->assertEquals(true, Configure::read('debug'));
+        $this->assertEquals(true, dev());
 
         Configure::write('debug', false);
-        $this->assertEquals(false, Configure::read('debug'));
+        $this->assertEquals(false, dev());
     }
 
     public function testNamespaceSplit()
