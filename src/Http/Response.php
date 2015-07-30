@@ -12,6 +12,8 @@ use Phat\Http\Exception\UnknownStatusException;
  */
 class Response
 {
+    // TODO : output compresion
+
     /**
      * @var array HTTP Status codes and strings
      */
@@ -424,7 +426,6 @@ class Response
 
     private function sendFile($filepath)
     {
-        $this->outputCompressed();
         if ($fd = @fopen($filepath, 'r')) {
             $fsize = filesize($filepath);
             $this->sendHeader("Content-length: $fsize");
