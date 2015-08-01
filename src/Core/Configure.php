@@ -2,6 +2,8 @@
 
 namespace Phat\Core;
 
+use Phat\Utils\ArrayManipulator;
+
 /**
  * The Configure class is a static container of the application configuration.
  */
@@ -29,7 +31,7 @@ class Configure
         }
 
         foreach ($entry as $name => $value) {
-            self::$values[$name] = $value;
+            self::$values = ArrayManipulator::insert(self::$values, $name, $value);
         }
 
         if (isset($entry['debug']) && function_exists('ini_set')) {
@@ -50,12 +52,12 @@ class Configure
      */
     public static function read($entry = null)
     {
-        if(null === $entry) {
+        if (null === $entry) {
             return self::$values;
         }
 
         if (self::check($entry)) {
-            return self::$values[$entry];
+            return ArrayManipulator::get(self::$values, $entry);
         }
 
         return '';
@@ -70,7 +72,7 @@ class Configure
      */
     public static function check($entry)
     {
-        return array_key_exists($entry, self::$values);
+        return ArrayManipulator::check(self::$values, $entry);
     }
 
     /**
@@ -80,7 +82,7 @@ class Configure
      */
     public static function erase($entry)
     {
-        unset(self::$values[$entry]);
+        self::$values = ArrayManipulator::erase(self::$values, $entry);
     }
 
     /**
