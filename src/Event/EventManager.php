@@ -71,15 +71,20 @@ class EventManager
 
     public function attach(EventListenerInterface $instance)
     {
-        foreach($instance->implementedEvents() as $event_name => $function) {
+        foreach((array)$instance->implementedEvents() as $event_name => $function) {
             $options = [];
             $method = $function;
             if(is_array($function) && isset($function['callable'])) {
                 list($method, $options) = $this->extractCallable($function, $instance);
             } elseif(is_array($function) && is_numeric(key($function))) {
                 foreach($function as $func) {
-                    list($method, $options) = $this->extractCallable($func, $instance);
-                    $this->on($event_name, $method, $options);
+                    if(isset($func['callable'])) {
+                        list($method, $options) = $this->extractCallable($func, $instance);
+                        $this->on($event_name, $method, $options);
+                    } else {
+                        $method = [$instance, $func];
+                        $this->on($event_name, $method);
+                    }
                 }
                 continue;
             }
@@ -92,7 +97,7 @@ class EventManager
 
     public function detach(EventListenerInterface $instance)
     {
-        foreach($instance->implementedEvents() as $event_name => $function) {
+        foreach((array)$instance->implementedEvents() as $event_name => $function) {
             if(is_array($function)) {
                 if(is_numeric(key($function))) {
                     foreach($function as $func) {
