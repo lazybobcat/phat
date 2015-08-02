@@ -32,7 +32,10 @@ class ArrayManipulator
             $parts = explode('.', $path);
         } else {
             if (!is_array($path)) {
-                throw new InvalidArgumentException("Invalid Parameter '$path', please use a dot separated path or an array.");
+                throw new InvalidArgumentException(sprintf(
+                    "Invalid path parameter of type '%s', please use a dot separated path or an array.",
+                    gettype($path)
+                ));
             }
 
             $parts = $path;
@@ -50,7 +53,7 @@ class ArrayManipulator
     }
 
     /**
-     * Checks if the data exists atthe given $path in the array $data. You can use a dot separated path.
+     * Checks if the data exists at the given $path in the array $data. You can use a dot separated path.
      *
      * @param array        $data The data to look into
      * @param string|array $path The path to look at
@@ -82,7 +85,10 @@ class ArrayManipulator
             $parts = explode('.', $path);
         } else {
             if (!is_array($path)) {
-                throw new InvalidArgumentException("Invalid Parameter '$path', please use a dot separated path or an array.");
+                throw new InvalidArgumentException(sprintf(
+                    "Invalid path parameter of type '%s', please use a dot separated path or an array.",
+                    gettype($path)
+                ));
             }
 
             $parts = $path;
@@ -126,7 +132,10 @@ class ArrayManipulator
             $parts = explode('.', $path);
         } else {
             if (!is_array($path)) {
-                throw new InvalidArgumentException("Invalid Parameter '$path', please use a dot separated path or an array.");
+                throw new InvalidArgumentException(sprintf(
+                    "Invalid path parameter of type '%s', please use a dot separated path or an array.",
+                    gettype($path)
+                ));
             }
 
             $parts = $path;
@@ -135,7 +144,7 @@ class ArrayManipulator
         // Recursive removal from the array
         $k = array_shift($parts);
         if (count($parts) > 0) {
-            if (!isset($data[$k])) {
+            if (!isset($data[$k]) || !is_array($data[$k])) {
                 throw new InvalidArgumentException("The path tries access the non-existing key '$k'.");
             }
             $data[$k] = self::erase($data[$k], $parts);
