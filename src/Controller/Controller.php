@@ -3,6 +3,8 @@
 namespace Phat\Controller;
 
 use Phat\Core\Configure;
+use Phat\Event\EventDispatcherTrait;
+use Phat\Event\EventListenerInterface;
 use Phat\Http\Request;
 use Phat\Http\Response;
 use Phat\Routing\Router;
@@ -14,9 +16,11 @@ use Phat\View\View;
  * It also provides handy shortcuts to generate Response object depending on your needs.
  * There are pre/post action and render hooks that you can use by sub-classing Controller.
  */
-class Controller implements ControllerInterface
+class Controller implements ControllerInterface, EventListenerInterface
 {
     // TODO : Helpers and Components
+
+    use EventDispatcherTrait;
 
     /**
      * @var Request The client's request
@@ -46,6 +50,8 @@ class Controller implements ControllerInterface
         } else {
             $this->view = new View($this->request, $this->name, []);
         }
+
+        $this->eventManager()->attach($this);
     }
 
     /**
@@ -148,5 +154,24 @@ class Controller implements ControllerInterface
      */
     public function afterRender()
     {
+    }
+
+    /**
+     * Returns the list of listened Events and the method that is used as callback
+     * Example:
+     *
+     *  public function implementedEvents()
+     *  {
+     *      return [
+     *          'Post.saved' => 'addTagsToPost',
+     *          'Basket.Item.Added' => ['callable' => 'updateStocks', 'priority' => 20]
+     *      ];
+     *  }
+     *
+     * @return array
+     */
+    public function implementedEvents()
+    {
+        return [];
     }
 }
