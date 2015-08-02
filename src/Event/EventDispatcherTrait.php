@@ -17,6 +17,8 @@ trait EventDispatcherTrait
         }
 
         $event = new Event($name, $data, $subject);
-        $this->eventManager(); // TODO
+        $this->eventManager()->dispatch($event);
+
+        return $event;
     }
 }

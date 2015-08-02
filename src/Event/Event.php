@@ -26,7 +26,8 @@ class Event
     public function __get($attr)
     {
         if('name' === $attr || 'subject' === $attr) {
-            return $this->get{ucfirst($attr)}();
+            $func = 'get'.ucfirst($attr);
+            return $this->$func();
         }
 
         return null;
