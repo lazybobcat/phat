@@ -40,7 +40,9 @@ class Behavior implements EventListenerInterface
             'orm.table.beforeSave'  => 'beforeSave',
             'orm.table.afterSave'   => 'afterSave',
             'orm.table.beforeDelete'=> 'beforeDelete',
-            'orm.table.afterDelete' => 'afterDelete'
+            'orm.table.afterDelete' => 'afterDelete',
+            'orm.table.beforeValidation' => 'beforeValidation',
+            'orm.table.afterValidation' => 'afterValidation'
         ];
 
         $events = [];

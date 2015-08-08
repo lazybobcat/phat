@@ -3,12 +3,15 @@
 namespace Phat\ORM;
 
 
-use Phat\Event\Event;
+use Phat\Core\Configure;
 use Phat\Event\EventDispatcherInterface;
 use Phat\Event\EventDispatcherTrait;
 use Phat\Event\EventListenerInterface;
 use Phat\Event\EventManager;
+use Phat\ORM\Database\Connection;
+use Phat\ORM\Database\TableHandler;
 use Phat\Utils\Inflector;
+use Pixie\QueryBuilder;
 
 class Table implements RepositoryInterface, EventListenerInterface, EventDispatcherInterface
 {
@@ -16,12 +19,17 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     // TODO : validation
 
+    public $database = 'default';
 
-    protected $table;
+    public $table;
 
     protected $alias;
 
+    protected $repositoryAlias;
+
     protected $connection;
+
+    protected $handler;
 
     protected $primaryKey = 'id';
 
@@ -31,7 +39,7 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     protected $behaviors = [];
 
-    protected $entityClass;
+    public $entityClass;
 
 
     public function __construct(array $options = [])
@@ -54,6 +62,12 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
         if(!empty($options['entityClass'])) {
             $this->entityClass = $options['entityClass'];
         }
+        if(!empty($options['database'])) {
+            $this->database = $options['database'];
+        }
+
+        $this->connection = Connection::get($this->database);
+        $this->handler = new TableHandler();
 
         // TODO : attach behaviors
         // TODO : associations
@@ -89,12 +103,24 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
         return $this->alias;
     }
 
+    public function repositoryAlias()
+    {
+        if ($this->repositoryAlias === null) {
+            $alias = namespaceSplit(get_class($this));
+            $alias = substr(end($alias), 0, -5);
+            $alias = Inflector::singularize(strtolower($alias));
+            $this->repositoryAlias = $alias;
+        }
+        return $this->repositoryAlias;
+    }
+
     public function entityClass()
     {
         if(null === $this->entityClass) {
             $default = 'Phat\ORM\Entity';
             $class = namespaceSplit(get_class($this));
             $class = substr(end($class), 0, -5);
+            $class = Inflector::singularize($class);
             $class = 'App\Model\Entity\\'.$class;
             if(class_exists($class)) {
                 $this->entityClass = $class;
@@ -108,7 +134,15 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     public function aliasField($field)
     {
-        return $this->alias() . '.' . $field;
+        if(false === strstr($field, '.')) {
+            return strtolower($this->alias()) . '.' . $field;
+        }
+        return $field;
+    }
+
+    public function repositoryAliasField($field)
+    {
+        return $this->repositoryAlias() . '__' . $field;
     }
 
     /**
@@ -137,22 +171,80 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
      */
     public function implementedEvents()
     {
-        // TODO: Implement implementedEvents() method.
+        $eventMap = [
+            'orm.table.initialize'  => 'initialize',
+            'orm.table.beforeFind'  => 'beforeFind',
+            'orm.table.afterFind'   => 'afterFind',
+            'orm.table.beforeSave'  => 'beforeSave',
+            'orm.table.afterSave'   => 'afterSave',
+            'orm.table.beforeDelete'=> 'beforeDelete',
+            'orm.table.afterDelete' => 'afterDelete',
+            'orm.table.beforeValidation' => 'beforeValidation',
+            'orm.table.afterValidation' => 'afterValidation'
+        ];
+
+        $events = [];
+        $priority = isset($config['priority']) ? $config['priority'] : null;
+
+        foreach($eventMap as $event => $method) {
+            if(!method_exists($this, $method)) {
+                continue;
+            }
+
+            if($priority) {
+                $events[$event] = [
+                    'callable' => $method,
+                    'priority' => $priority
+                ];
+            } else {
+                $events[$event] = $method;
+            }
+        }
     }
 
+    /**
+     * @return QueryBuilder\QueryBuilderHandler
+     */
     public function query()
     {
-        // TODO: Implement query() method.
+        $qb = Connection::getQueryBuilder($this->database);
+
+        return $qb->table($this->table())->setFetchMode(\PDO::FETCH_ASSOC);
     }
 
-    public function newEntity($data = null, array $options = [])
+    public function newEntity(array $data = [], array $options = [])
     {
-        // TODO: Implement newEntity() method.
+        $class = $this->entityClass();
+
+        return new $class($data);
     }
 
     public function find($type = 'all', array $options = [])
     {
-        // TODO: Implement find() method.
+        $fields = $this->handler->columnList($this, $this->database);
+
+        $query = $this->query()
+            ->leftJoin('users', 'posts.user_id', '=', 'users.id');
+
+        foreach($fields as $field) {
+            $query->select([$this->aliasField($field) => $this->repositoryAliasField($field)]);
+        }
+
+        $query->where('posts.active', '=', 1)
+            ->orderBy('posts.created')
+//            ->limit(1)->offset(0)
+        ;
+        debug($query->getQuery()->getSql());
+        debug($query->getQuery()->getBindings());
+        debug($query->getQuery()->getRawSql());
+
+        $fetched = $query->get();
+        $results = [];
+        foreach($fetched as $result) {
+            debug($result);
+            $results[] = $this->hydrate($result);
+        }
+        return $results;
     }
 
     public function findById($id, array $options = [])
@@ -178,5 +270,19 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
     public function deleteAll(array $conditions)
     {
         // TODO: Implement deleteAll() method.
+    }
+
+    private function hydrate(array $data = [])
+    {
+        $attributes = [];
+        foreach($data as $sfield => $v) {
+            list($alias, $field) = explode('__', $sfield);
+            if($alias === $this->repositoryAlias()) {
+                $attributes[$field] = $v;
+            }
+        }
+
+        $class = $this->entityClass();
+        return new $class($attributes);
     }
 }

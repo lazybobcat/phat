@@ -9,7 +9,7 @@ interface RepositoryInterface
 
     public function query();
 
-    public function newEntity($data = null, array $options = []);
+    public function newEntity(array $data = [], array $options = []);
 
     public function find($type = 'all', array $options = []);
 

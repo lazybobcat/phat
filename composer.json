@@ -30,10 +30,11 @@
     "require": {
         "php": ">= 5.5",
         "lo-x/php-ref": "dev-master",
-        "filp/whoops": "^1.2@dev"
+        "usmanhalalit/pixie": "dev-master"
     },
     "require-dev": {
-        "phpunit/phpunit": "*"
+        "phpunit/phpunit": "*",
+        "filp/whoops": "^1.2@dev"
     },
     "autoload": {
         "psr-4": {
