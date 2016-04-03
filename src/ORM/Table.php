@@ -27,8 +27,6 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
 
     protected $repositoryAlias;
 
-    protected $connection;
-
     protected $handler;
 
     protected $primaryKey = 'id';
@@ -50,9 +48,6 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
         if(!empty($options['alias'])) {
             $this->alias = $options['alias'];
         }
-        if(!empty($options['connection'])) {
-            $this->connection = $options['connection'];
-        }
         if(!empty($options['primaryKey'])) {
             $this->primaryKey = $options['primaryKey'];
         }
@@ -66,7 +61,6 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
             $this->database = $options['database'];
         }
 
-        $this->connection = Connection::get($this->database);
         $this->handler = new TableHandler();
 
         // TODO : attach behaviors
@@ -137,6 +131,7 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
         if(false === strstr($field, '.')) {
             return strtolower($this->alias()) . '.' . $field;
         }
+
         return $field;
     }
 
@@ -203,53 +198,44 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
     }
 
     /**
-     * @return QueryBuilder\QueryBuilderHandler
+     * @return array
+     */
+    public function getFields()
+    {
+        return $this->handler->columnList($this, $this->database);
+    }
+
+    /**
+     * @return Query
      */
     public function query()
     {
-        $qb = Connection::getQueryBuilder($this->database);
+        $query = new Query($this, $this->database);
+        $query->select();
 
-        return $qb->table($this->table())->setFetchMode(\PDO::FETCH_ASSOC);
+        return $query;
     }
 
-    public function newEntity(array $data = [], array $options = [])
+    public function create(array $data = [])
     {
         $class = $this->entityClass();
 
         return new $class($data);
     }
 
-    public function find($type = 'all', array $options = [])
+    public function findAll()
     {
-        $fields = $this->handler->columnList($this, $this->database);
+        $query = $this->query();
 
-        $query = $this->query()
-            ->leftJoin('users', 'posts.user_id', '=', 'users.id');
-
-        foreach($fields as $field) {
-            $query->select([$this->aliasField($field) => $this->repositoryAliasField($field)]);
-        }
-
-        $query->where('posts.active', '=', 1)
-            ->orderBy('posts.created')
-//            ->limit(1)->offset(0)
-        ;
-        debug($query->getQuery()->getSql());
-        debug($query->getQuery()->getBindings());
-        debug($query->getQuery()->getRawSql());
-
-        $fetched = $query->get();
-        $results = [];
-        foreach($fetched as $result) {
-            debug($result);
-            $results[] = $this->hydrate($result);
-        }
-        return $results;
+        return $query->getResult();
     }
 
-    public function findById($id, array $options = [])
+    public function find($id)
     {
-        // TODO: Implement findById() method.
+        $query = $this->query();
+        $query->where($this->aliasField($this->primaryKey), $id);
+
+        return $query->getOneOrNullResult();
     }
 
     public function save(EntityInterface $entity, array $options = [])
@@ -272,7 +258,7 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
         // TODO: Implement deleteAll() method.
     }
 
-    private function hydrate(array $data = [])
+    public function hydrate(array $data = [])
     {
         $attributes = [];
         foreach($data as $sfield => $v) {

@@ -8,16 +8,16 @@ use Pixie\QueryBuilder\QueryBuilderHandler;
 
 class Connection
 {
-    private static $connection = null;
+    private static $connections = [];
 
     public static function get($database = 'default')
     {
-        if(null === self::$connection) {
+        if(empty(self::$connections[$database])) {
             $config = Configure::read("Databases.{$database}");
-            self::$connection = new \Pixie\Connection($config['driver'], $config);
+            self::$connections[$database] = new \Pixie\Connection($config['driver'], $config);
         }
 
-        return self::$connection;
+        return self::$connections[$database];
     }
 
     public static function getQueryBuilder($database = 'default')

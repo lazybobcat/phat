@@ -9,11 +9,11 @@ interface RepositoryInterface
 
     public function query();
 
-    public function newEntity(array $data = [], array $options = []);
+    public function create(array $data = []);
 
-    public function find($type = 'all', array $options = []);
+    public function findAll();
 
-    public function findById($id, array $options = []);
+    public function find($id);
 
     public function save(EntityInterface $entity, array $options = []);
 
