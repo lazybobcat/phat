@@ -140,6 +140,17 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
         return $this->repositoryAlias() . '__' . $field;
     }
 
+    public function getAliasedFields()
+    {
+        $fields = [];
+
+        foreach($this->getFields() as $field) {
+            $fields[$this->aliasField($field)] = $this->repositoryAliasField($field);
+        }
+
+        return $fields;
+    }
+
     /**
      * Returns the Phat\Event\EventManager instance. You can use this instance to register callbacks.
      *
@@ -213,6 +224,11 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
         $query = new Query($this, $this->database);
         $query->select();
 
+        foreach($this->associations as $association) {
+            /** @var AssociationInterface $association */
+            $association->join($query);
+        }
+
         return $query;
     }
 
@@ -261,14 +277,28 @@ class Table implements RepositoryInterface, EventListenerInterface, EventDispatc
     public function hydrate(array $data = [])
     {
         $attributes = [];
+        $linked_entities = [];
+
         foreach($data as $sfield => $v) {
             list($alias, $field) = explode('__', $sfield);
             if($alias === $this->repositoryAlias()) {
                 $attributes[$field] = $v;
+            } else {
+                $linked_entities[$alias][$sfield] = $v;
             }
         }
 
         $class = $this->entityClass();
-        return new $class($attributes);
+        $entity = new $class($attributes);
+
+        foreach($linked_entities as $repository_alias => $linked_entity) {
+            foreach($this->associations as $association) {
+                if(null !== ($association->hydrate($repository_alias, $linked_entity, $entity))) {
+                    break;
+                }
+            }
+        }
+
+        return $entity;
     }
 }

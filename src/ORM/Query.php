@@ -23,22 +23,31 @@ class Query
         $this->queryBuilder = Connection::getQueryBuilder($database)->table($table->table())->setFetchMode(\PDO::FETCH_ASSOC);
     }
 
-    public function select($fields = [])
+    public function select(Table $table = null)
     {
-        if($fields instanceof Table) {
-            $fields = $fields->getFields();
-        } elseif(empty($fields)) {
-            $fields = $this->table->getFields();
+        if($table instanceof Table) {
+            $fields = $table->getAliasedFields();
+        } else {
+            $fields = $this->table->getAliasedFields();
         }
 
-        foreach($fields as $field) {
-            $this->queryBuilder->select([$this->table->aliasField($field) => $this->table->repositoryAliasField($field)]);
-        }
+        $this->queryBuilder->select($fields);
 
         return $this;
     }
 
-    // @TODO : join
+    public function join($table, $field, $operator = null, $value = null, $type = 'inner')
+    {
+        $field = $this->handleField($field);
+
+        if($table instanceof Table) {
+            $table = $table->table();
+        }
+
+        $this->queryBuilder->join($table, $field, $operator, $value, $type);
+
+        return $this;
+    }
 
     /**
      * $query->andWhere('name', '=', 'John');
