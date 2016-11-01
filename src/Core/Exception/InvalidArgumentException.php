@@ -1,6 +1,6 @@
 <?php
 
-namespace Phat\Utils\Exception;
+namespace Phat\Core\Exception;
 
 class InvalidArgumentException extends \Exception
 {

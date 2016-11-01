@@ -2,7 +2,7 @@
 
 namespace Phat\Utils;
 
-use Phat\Utils\Exception\InvalidArgumentException;
+use Phat\Core\Exception\InvalidArgumentException;
 
 /**
  * Useful package of functions to manipulate arrays.

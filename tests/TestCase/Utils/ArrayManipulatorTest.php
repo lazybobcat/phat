@@ -47,7 +47,7 @@ class ArrayManipulatorTest extends TestCase
     }
 
     /**
-     * @expectedException \Phat\Utils\Exception\InvalidArgumentException
+     * @expectedException \Phat\Core\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid path parameter of type 'object', please use a dot separated path or an array.
      */
     public function testGetInvalidPathException()
@@ -67,7 +67,7 @@ class ArrayManipulatorTest extends TestCase
     }
 
     /**
-     * @expectedException \Phat\Utils\Exception\InvalidArgumentException
+     * @expectedException \Phat\Core\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid path parameter of type 'object', please use a dot separated path or an array.
      */
     public function testCheckInvalidPathException()
@@ -89,7 +89,7 @@ class ArrayManipulatorTest extends TestCase
     }
 
     /**
-     * @expectedException \Phat\Utils\Exception\InvalidArgumentException
+     * @expectedException \Phat\Core\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid path parameter of type 'object', please use a dot separated path or an array.
      */
     public function testInsertInvalidPathException()
@@ -99,7 +99,7 @@ class ArrayManipulatorTest extends TestCase
     }
 
     /**
-     * @expectedException \Phat\Utils\Exception\InvalidArgumentException
+     * @expectedException \Phat\Core\Exception\InvalidArgumentException
      * @expectedExceptionMessage The path tries use the existing key 'SubKey' but this key does not point on an array, it points on 'AnotherValue'.
      */
     public function testInsertExistingPathException()
@@ -118,7 +118,7 @@ class ArrayManipulatorTest extends TestCase
     }
 
     /**
-     * @expectedException \Phat\Utils\Exception\InvalidArgumentException
+     * @expectedException \Phat\Core\Exception\InvalidArgumentException
      * @expectedExceptionMessage Invalid path parameter of type 'object', please use a dot separated path or an array.
      */
     public function testEraseInvalidPathException()
@@ -128,7 +128,7 @@ class ArrayManipulatorTest extends TestCase
     }
 
     /**
-     * @expectedException \Phat\Utils\Exception\InvalidArgumentException
+     * @expectedException \Phat\Core\Exception\InvalidArgumentException
      * @expectedExceptionMessage The path tries access the non-existing key 'SubKey'.
      */
     public function testEraseExistingPathException()
