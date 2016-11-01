@@ -13,7 +13,7 @@ class CommonTest extends TestCase
 <pre>
 
 > \$object - %s:%d
-=========================================================
+===================================================
 string(12) "Hello World!"
 </pre>
 EOT;
